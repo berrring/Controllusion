@@ -133,7 +133,7 @@ function RegisterPage() {
               Create a session and enter the updated dashboard kit without extra setup.
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-muted">
-              Registration activates a user session immediately, so the first screen after signup is the rebuilt Controllussion shell.
+              Registration activates a user session immediately, so the first screen after signup is the rebuilt Controllusion shell.
             </p>
 
             <div className="mt-6 grid gap-4 sm:grid-cols-2">

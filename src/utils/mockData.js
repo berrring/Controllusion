@@ -391,7 +391,7 @@ export const seedNotifications = [
   {
     id: 'ntf_1',
     title: 'Quarterly forecast updated',
-    message: 'Pipeline value increased 12% after this week’s proposal activity.',
+    message: 'Pipeline value increased 12% after this week\'s proposal activity.',
     createdAt: daysAgo(0),
   },
   {

@@ -68,7 +68,7 @@ function LoginPage() {
 
           <h1 className="text-3xl font-black tracking-tight text-[var(--text)]">Welcome back</h1>
           <p className="mt-2 text-sm leading-7 text-muted">
-            Use your workspace email and password to continue into the rebuilt Controllussion admin dashboard.
+            Use your workspace email and password to continue into the rebuilt Controllusion admin dashboard.
           </p>
 
           <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
@@ -103,7 +103,17 @@ function LoginPage() {
             </FormField>
 
             <div className="flex items-center justify-between text-sm font-semibold">
-              <button className="text-brand-600" type="button">
+              <button
+                className="text-brand-600"
+                onClick={() =>
+                  showToast({
+                    title: 'Demo reset flow',
+                    description: 'Use admin@controllusion.com / Admin@123 or create a new account from the register page.',
+                    type: 'info',
+                  })
+                }
+                type="button"
+              >
                 Forgot password?
               </button>
               <Link className="text-muted transition hover:text-brand-600" to="/register">

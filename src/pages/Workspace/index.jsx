@@ -16,6 +16,7 @@ import {
   Laptop,
   LayoutGrid,
   LifeBuoy,
+  List,
   MapPin,
   MoreHorizontal,
   Package,
@@ -44,6 +45,7 @@ import {
 import Avatar from '../../components/common/Avatar';
 import { UIContext } from '../../context/UIContext';
 import { useAuth } from '../../hooks/useAuth';
+import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { cx, formatCurrency, formatNumber } from '../../utils/formatters';
 import { validatePasswordChange, validateProfile } from '../../utils/validation';
 import { WORKSPACE_BY_KEY } from '../../utils/workspace';
@@ -162,6 +164,35 @@ const uiColors = [
   { label: 'Danger', hex: '#FF6B6B', className: 'bg-[#ff6b6b]' },
 ];
 
+const altSalesChartData = salesChartData.map((item, index) => ({
+  ...item,
+  value: Math.max(20, Math.round(item.value - (index % 4 === 0 ? 6 : -4))),
+}));
+
+const contactTemplates = [
+  { name: 'Jude Warren', title: 'Design Lead', email: 'jude@controllusion.com', phone: '+1 (302) 555-0194' },
+  { name: 'Kristin Black', title: 'Operations Manager', email: 'kristin@controllusion.com', phone: '+1 (302) 555-0136' },
+  { name: 'Robert Fox', title: 'Sales Manager', email: 'robert@controllusion.com', phone: '+1 (302) 555-0121' },
+];
+
+const teamTemplates = [
+  { name: 'Jenny Wilson', role: 'QA Specialist', team: 'Quality', status: 'Online' },
+  { name: 'Guy Hawkins', role: 'Frontend Engineer', team: 'Engineering', status: 'Away' },
+  { name: 'Jacob Jones', role: 'Account Executive', team: 'Sales', status: 'Busy' },
+];
+
+const favoriteCollections = [
+  { title: 'Holiday launch set', items: '12 products', meta: 'Updated 1h ago', archived: false },
+  { title: 'Admin kit references', items: '6 assets', meta: 'Updated yesterday', archived: false },
+  { title: 'Best sellers', items: '24 products', meta: 'Synced with dashboard', archived: true },
+];
+
+const todoTemplates = [
+  'Review invoice reminder copy for the finance team',
+  'Approve the latest dashboard export request',
+  'Check the new pricing card against the product list',
+];
+
 function statusClassName(status) {
   if (['Delivered', 'Paid', 'Healthy', 'Online'].includes(status)) return 'bg-[#16c098]';
   if (['Processing', 'Pending', 'Away'].includes(status)) return 'bg-[#4f80ff]';
@@ -186,12 +217,12 @@ function PageHeader({ title, description, actions }) {
   );
 }
 
-function GhostPill({ children, active = false }) {
-  return <button className={cx('inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-extrabold transition', active ? 'border-[#4f80ff] bg-[#4f80ff] text-white' : 'border-[color:var(--border)] bg-white text-[#77819b] hover:border-[#cfd7e9] hover:text-[#20253a]')} type="button">{children}</button>;
+function GhostPill({ children, active = false, className = '', ...props }) {
+  return <button className={cx('inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-extrabold transition', active ? 'border-[#4f80ff] bg-[#4f80ff] text-white' : 'border-[color:var(--border)] bg-white text-[#77819b] hover:border-[#cfd7e9] hover:text-[#20253a]', className)} type="button" {...props}>{children}</button>;
 }
 
-function DropdownChip({ label }) {
-  return <button className="inline-flex h-10 items-center gap-2 rounded-[10px] border border-[color:var(--border)] bg-white px-3 text-xs font-bold text-[#9aa4bb]" type="button"><span>{label}</span><span className="text-[10px]">v</span></button>;
+function DropdownChip({ label, ...props }) {
+  return <button className="inline-flex h-10 items-center gap-2 rounded-[10px] border border-[color:var(--border)] bg-white px-3 text-xs font-bold text-[#9aa4bb]" type="button" {...props}><span>{label}</span><span className="text-[10px]">v</span></button>;
 }
 
 function StatusBadge({ children }) {
@@ -221,7 +252,7 @@ function MetricCard({ item }) {
   );
 }
 
-function ProductCard({ product, favorite = false }) {
+function ProductCard({ product, favorite = false, onToggleFavorite, onOpen }) {
   const Icon = product.icon;
   return (
     <ShellCard className={cx('rounded-[24px] bg-gradient-to-b p-5', product.accent)}>
@@ -229,7 +260,7 @@ function ProductCard({ product, favorite = false }) {
         <div className={cx('flex h-14 w-14 items-center justify-center rounded-[18px]', product.iconClassName)}>
           <Icon className="h-7 w-7" />
         </div>
-        <button className="text-[#c6ccdb] transition hover:text-[#ff6b6b]" type="button">
+        <button className="text-[#c6ccdb] transition hover:text-[#ff6b6b]" onClick={onToggleFavorite} type="button">
           <Star className={cx('h-5 w-5', favorite && 'fill-current text-[#ff6b6b]')} />
         </button>
       </div>
@@ -241,6 +272,9 @@ function ProductCard({ product, favorite = false }) {
         <span>{formatCurrency(product.price)}</span>
         <span>{product.stock} in stock</span>
       </div>
+      <button className="mt-5 inline-flex h-11 items-center justify-center rounded-[16px] border border-[color:var(--border)] bg-white px-4 text-sm font-extrabold text-[#20253a] transition hover:border-[#cfd7e9] hover:bg-[#fafcff]" onClick={onOpen} type="button">
+        Open details
+      </button>
     </ShellCard>
   );
 }
@@ -267,6 +301,19 @@ function ProgressBar({ value, color = '#4f80ff' }) {
   return <div className="h-2.5 w-full rounded-full bg-[#eff2f8]"><div className="h-full rounded-full" style={{ backgroundColor: color, width: `${value}%` }} /></div>;
 }
 
+function EmptyState({ title, description, action, icon: Icon = Search }) {
+  return (
+    <div className="rounded-[24px] border border-dashed border-[color:var(--border-strong)] bg-[#fbfcff] px-6 py-10 text-center">
+      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-[18px] bg-white text-[#4f80ff] shadow-[0_18px_40px_-34px_rgba(79,128,255,0.42)]">
+        <Icon className="h-6 w-6" />
+      </div>
+      <h3 className="mt-5 text-lg font-black tracking-[-0.03em] text-[#20253a]">{title}</h3>
+      <p className="mx-auto mt-2 max-w-md text-sm font-semibold leading-7 text-[#8b93a8]">{description}</p>
+      {action ? <div className="mt-5 flex justify-center">{action}</div> : null}
+    </div>
+  );
+}
+
 function SettingsField({ label, error, children }) {
   return <label className="block"><span className="mb-2 block text-sm font-extrabold text-[#5f6a85]">{label}</span>{children}{error ? <span className="mt-2 block text-sm font-semibold text-[#ff6b6b]">{error}</span> : null}</label>;
 }
@@ -276,18 +323,26 @@ function FieldInput(props) {
 }
 
 function DashboardSection() {
+  const { showToast } = useContext(UIContext);
+  const [period, setPeriod] = useState('October');
+  const chartData = period === 'October' ? salesChartData : altSalesChartData;
+
   return (
     <div className="space-y-7">
-      <PageHeader title="Dashboard" description="A faithful bright admin shell inspired by the public Controllusion dashboard frame." />
+      <PageHeader
+        title="Dashboard"
+        description="A faithful bright admin shell inspired by the public Controllusion dashboard frame."
+        actions={<GhostPill onClick={() => showToast({ title: 'Dashboard synced', description: `Latest ${period} metrics were refreshed.` })}>Refresh data</GhostPill>}
+      />
       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">{dashboardMetrics.map((item) => <MetricCard item={item} key={item.label} />)}</div>
       <ShellCard className="p-0">
         <div className="flex items-center justify-between border-b border-[color:var(--border)] px-6 py-5">
           <h2 className="text-[18px] font-black text-[#20253a] sm:text-[20px]">Sales Details</h2>
-          <DropdownChip label="October" />
+          <DropdownChip label={period} onClick={() => setPeriod((current) => current === 'October' ? 'November' : 'October')} />
         </div>
         <div className="h-[390px] px-4 py-6 sm:px-6">
           <ResponsiveContainer height="100%" width="100%">
-            <AreaChart data={salesChartData} margin={{ top: 18, right: 10, left: -8, bottom: 0 }}>
+            <AreaChart data={chartData} margin={{ top: 18, right: 10, left: -8, bottom: 0 }}>
               <defs><linearGradient id="salesGradientDashboardV2" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor="#4F80FF" stopOpacity={0.2} /><stop offset="100%" stopColor="#4F80FF" stopOpacity={0.02} /></linearGradient></defs>
               <CartesianGrid stroke="#edf1f8" vertical={false} />
               <XAxis axisLine={false} dataKey="label" interval={2} tick={{ fill: '#b8c0d1', fontSize: 11 }} tickLine={false} />
@@ -301,7 +356,7 @@ function DashboardSection() {
       <ShellCard className="p-0">
         <div className="flex items-center justify-between border-b border-[color:var(--border)] px-6 py-5">
           <h2 className="text-[18px] font-black text-[#20253a] sm:text-[20px]">Deals Details</h2>
-          <DropdownChip label="October" />
+          <DropdownChip label={period} onClick={() => setPeriod((current) => current === 'October' ? 'November' : 'October')} />
         </div>
         <div className="overflow-x-auto px-4 py-5 sm:px-6">
           <table className="min-w-full">
@@ -315,10 +370,94 @@ function DashboardSection() {
 }
 
 function ProductsSection() {
+  const { showToast } = useContext(UIContext);
+  const [viewMode, setViewMode] = useState('grid');
+  const [sortMode, setSortMode] = useState('latest');
+  const [favoriteIds, setFavoriteIds] = useLocalStorage('controllusion_workspace_favorites', ['prod_watch', 'prod_headphones']);
+  const visibleProducts = useMemo(() => {
+    const items = [...productCards];
+    if (sortMode === 'price') {
+      return items.sort((a, b) => b.price - a.price);
+    }
+    if (sortMode === 'stock') {
+      return items.sort((a, b) => b.stock - a.stock);
+    }
+    return items;
+  }, [sortMode]);
+
+  function toggleFavorite(productId) {
+    setFavoriteIds((current) =>
+      current.includes(productId) ? current.filter((item) => item !== productId) : [...current, productId],
+    );
+  }
+
   return (
     <div className="space-y-7">
-      <PageHeader title="Products" description="Products, cards, and stock summaries aligned to the same soft Figma admin visual language." actions={<><GhostPill active><LayoutGrid className="h-4 w-4" />Grid View</GhostPill><GhostPill>Latest First</GhostPill></>} />
-      <div className="grid gap-5 lg:grid-cols-2 xl:grid-cols-4">{productCards.map((product) => <ProductCard key={product.id} product={product} />)}</div>
+      <PageHeader
+        title="Products"
+        description="Products, cards, and stock summaries aligned to the same soft Figma admin visual language."
+        actions={
+          <>
+            <GhostPill active={viewMode === 'grid'} onClick={() => setViewMode('grid')}>
+              <LayoutGrid className="h-4 w-4" />
+              Grid View
+            </GhostPill>
+            <GhostPill active={viewMode === 'list'} onClick={() => setViewMode('list')}>
+              <List className="h-4 w-4" />
+              List View
+            </GhostPill>
+            <GhostPill active={sortMode === 'latest'} onClick={() => setSortMode(sortMode === 'latest' ? 'price' : sortMode === 'price' ? 'stock' : 'latest')}>
+              {sortMode === 'latest' ? 'Latest First' : sortMode === 'price' ? 'Highest Price' : 'Highest Stock'}
+            </GhostPill>
+          </>
+        }
+      />
+      {viewMode === 'grid' ? (
+        <div className="grid gap-5 lg:grid-cols-2 xl:grid-cols-4">
+          {visibleProducts.map((product) => (
+            <ProductCard
+              favorite={favoriteIds.includes(product.id)}
+              key={product.id}
+              onOpen={() => showToast({ title: product.name, description: `${product.stock} units available in ${product.category}.` })}
+              onToggleFavorite={() => toggleFavorite(product.id)}
+              product={product}
+            />
+          ))}
+        </div>
+      ) : (
+        <ShellCard className="p-0">
+          <div className="divide-y divide-[color:var(--border)]">
+            {visibleProducts.map((product) => {
+              const Icon = product.icon;
+
+              return (
+                <div className="flex flex-col gap-4 px-6 py-5 md:flex-row md:items-center md:justify-between" key={product.id}>
+                  <div className="flex items-center gap-4">
+                    <div className={cx('flex h-14 w-14 items-center justify-center rounded-[18px]', product.iconClassName)}>
+                      <Icon className="h-7 w-7" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#9aa4bb]">{product.category}</p>
+                      <h3 className="mt-1 text-lg font-black tracking-[-0.03em] text-[#20253a]">{product.name}</h3>
+                      <p className="mt-1 text-sm font-semibold text-[#8b93a8]">{product.stock} units ready for fulfillment</p>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-3 md:justify-end">
+                    <span className="rounded-full bg-[#f5f8ff] px-3 py-2 text-sm font-extrabold text-[#4f80ff]">{formatCurrency(product.price)}</span>
+                    <GhostPill active={favoriteIds.includes(product.id)} onClick={() => toggleFavorite(product.id)}>
+                      <Star className={cx('h-4 w-4', favoriteIds.includes(product.id) && 'fill-current')} />
+                      {favoriteIds.includes(product.id) ? 'Saved' : 'Save'}
+                    </GhostPill>
+                    <GhostPill onClick={() => showToast({ title: product.name, description: `${product.stock} units available in ${product.category}.` })}>
+                      Open Details
+                    </GhostPill>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </ShellCard>
+      )}
       <div className="grid gap-5 xl:grid-cols-[1.15fr_0.85fr]">
         <ShellCard>
           <div className="flex items-center justify-between">
@@ -326,7 +465,7 @@ function ProductsSection() {
               <h2 className="text-xl font-black tracking-[-0.03em] text-[#20253a]">Catalog Insight</h2>
               <p className="mt-1 text-sm font-semibold text-[#8b93a8]">What the merchandising team is focusing on this week.</p>
             </div>
-            <GhostPill>Export</GhostPill>
+            <GhostPill onClick={() => showToast({ title: 'Catalog exported', description: 'Product overview prepared for your team.' })}>Export</GhostPill>
           </div>
           <div className="mt-6 grid gap-4 md:grid-cols-3">
             <SmallStat detail="2.5% compared to last week" icon={TrendingUp} label="Revenue" tone="success" value="$124k" />
@@ -344,29 +483,81 @@ function ProductsSection() {
 }
 
 function FavoritesSection() {
+  const { showToast } = useContext(UIContext);
+  const [favoriteIds, setFavoriteIds] = useLocalStorage('controllusion_workspace_favorites', ['prod_watch', 'prod_headphones']);
+  const [favoritesView, setFavoritesView] = useState('all');
+  const [collections, setCollections] = useLocalStorage('controllusion_saved_collections', favoriteCollections);
+  const favoriteProducts = productCards.filter((product) => favoriteIds.includes(product.id));
+  const archivedProducts = productCards.filter((product) => !favoriteIds.includes(product.id));
+  const visibleProducts = favoritesView === 'all' ? favoriteProducts : archivedProducts;
+  const visibleCollections = collections.filter((collection) => (favoritesView === 'all' ? !collection.archived : collection.archived));
+
+  function toggleFavorite(productId) {
+    setFavoriteIds((current) =>
+      current.includes(productId) ? current.filter((item) => item !== productId) : [...current, productId],
+    );
+  }
+
+  function toggleCollectionState(title) {
+    setCollections((current) =>
+      current.map((collection) =>
+        collection.title === title ? { ...collection, archived: !collection.archived } : collection,
+      ),
+    );
+
+    showToast({
+      title: `${title} updated`,
+      description: favoritesView === 'all' ? 'Collection moved to archived.' : 'Collection restored to active favorites.',
+      type: 'info',
+    });
+  }
+
   return (
     <div className="space-y-7">
-      <PageHeader title="Favorites" description="Saved products, pinned cards, and hand-picked items presented like the UI kit composition." actions={<><GhostPill active>All Favorites</GhostPill><GhostPill>Archived</GhostPill></>} />
-      <div className="grid gap-5 lg:grid-cols-2 xl:grid-cols-4">{productCards.map((product) => <ProductCard favorite key={product.id} product={product} />)}</div>
+      <PageHeader
+        title="Favorites"
+        description="Saved products, pinned cards, and hand-picked items presented like the UI kit composition."
+        actions={
+          <>
+            <GhostPill active={favoritesView === 'all'} onClick={() => setFavoritesView('all')}>All Favorites</GhostPill>
+            <GhostPill active={favoritesView === 'archived'} onClick={() => setFavoritesView('archived')}>Archived</GhostPill>
+          </>
+        }
+      />
+      {visibleProducts.length ? (
+        <div className="grid gap-5 lg:grid-cols-2 xl:grid-cols-4">
+          {visibleProducts.map((product) => (
+            <ProductCard
+              favorite={favoriteIds.includes(product.id)}
+              key={product.id}
+              onOpen={() => showToast({ title: product.name, description: favoritesView === 'all' ? 'Saved in favorites.' : 'Currently outside favorites.' })}
+              onToggleFavorite={() => toggleFavorite(product.id)}
+              product={product}
+            />
+          ))}
+        </div>
+      ) : (
+        <EmptyState
+          description={favoritesView === 'all' ? 'There are no pinned products yet. Save items from Products to build this board.' : 'Every product is currently pinned, so the archive is empty.'}
+          icon={Star}
+          title={favoritesView === 'all' ? 'No favorite products yet' : 'Archive is empty'}
+        />
+      )}
       <div className="grid gap-5 xl:grid-cols-[0.95fr_1.05fr]">
         <ShellCard>
           <h2 className="text-xl font-black tracking-[-0.03em] text-[#20253a]">Saved Collections</h2>
           <div className="mt-6 space-y-4">
-            {[
-              { title: 'Holiday launch set', items: '12 products', meta: 'Updated 1h ago' },
-              { title: 'Admin kit references', items: '6 assets', meta: 'Updated yesterday' },
-              { title: 'Best sellers', items: '24 products', meta: 'Synced with dashboard' },
-            ].map((item) => (
+            {visibleCollections.length ? visibleCollections.map((item) => (
               <div className="rounded-[22px] border border-[color:var(--border)] bg-[#fbfcff] p-4" key={item.title}>
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="text-base font-black text-[#20253a]">{item.title}</p>
-                    <p className="mt-1 text-sm font-semibold text-[#8b93a8]">{item.items} · {item.meta}</p>
+                    <p className="mt-1 text-sm font-semibold text-[#8b93a8]">{item.items} / {item.meta}</p>
                   </div>
-                  <button className="text-[#b4bdd0]" type="button"><MoreHorizontal className="h-5 w-5" /></button>
+                  <button className="text-[#b4bdd0]" onClick={() => toggleCollectionState(item.title)} type="button"><MoreHorizontal className="h-5 w-5" /></button>
                 </div>
               </div>
-            ))}
+            )) : <EmptyState description="No collections in this state right now." icon={FolderKanban} title="Nothing to show" />}
           </div>
         </ShellCard>
         <ShellCard>
@@ -396,22 +587,40 @@ function FavoritesSection() {
 }
 
 function InboxSection() {
-  const activeThread = inboxThreads[0];
+  const { showToast } = useContext(UIContext);
+  const [filter, setFilter] = useState('unread');
+  const [query, setQuery] = useState('');
+  const [activeThreadId, setActiveThreadId] = useState(inboxThreads[0].id);
+  const filteredThreads = inboxThreads.filter((thread) => {
+    const matchesFilter = filter === 'all' || thread.unread;
+    const haystack = `${thread.name} ${thread.role} ${thread.subject}`.toLowerCase();
+    return matchesFilter && haystack.includes(query.toLowerCase());
+  });
+  const activeThread = filteredThreads.find((thread) => thread.id === activeThreadId) || filteredThreads[0] || null;
 
   return (
     <div className="space-y-7">
-      <PageHeader title="Inbox" description="An inbox screen using the same rounded surfaces, pale borders, and editorial spacing as the kit." actions={<><GhostPill active>Unread</GhostPill><GhostPill>Everything</GhostPill></>} />
+      <PageHeader
+        title="Inbox"
+        description="An inbox screen using the same rounded surfaces, pale borders, and editorial spacing as the kit."
+        actions={
+          <>
+            <GhostPill active={filter === 'unread'} onClick={() => setFilter('unread')}>Unread</GhostPill>
+            <GhostPill active={filter === 'all'} onClick={() => setFilter('all')}>Everything</GhostPill>
+          </>
+        }
+      />
       <div className="grid gap-5 xl:grid-cols-[0.84fr_1.16fr]">
         <ShellCard className="p-0">
           <div className="border-b border-[color:var(--border)] px-6 py-5">
             <div className="relative">
               <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#aab4c8]" />
-              <input className="h-12 w-full rounded-[18px] border border-[color:var(--border)] bg-[#fbfcff] pl-11 pr-4 text-sm font-semibold text-[#20253a] outline-none placeholder:text-[#b5bdcd]" placeholder="Search conversations" type="text" />
+              <input className="h-12 w-full rounded-[18px] border border-[color:var(--border)] bg-[#fbfcff] pl-11 pr-4 text-sm font-semibold text-[#20253a] outline-none placeholder:text-[#b5bdcd]" onChange={(event) => setQuery(event.target.value)} placeholder="Search conversations" type="text" value={query} />
             </div>
           </div>
           <div className="divide-y divide-[color:var(--border)]">
-            {inboxThreads.map((thread, index) => (
-              <button className={cx('flex w-full items-start gap-4 px-6 py-5 text-left transition hover:bg-[#fafcff]', index === 0 && 'bg-[#f7faff]')} key={thread.id} type="button">
+            {filteredThreads.length ? filteredThreads.map((thread) => (
+              <button className={cx('flex w-full items-start gap-4 px-6 py-5 text-left transition hover:bg-[#fafcff]', activeThread?.id === thread.id && 'bg-[#f7faff]')} key={thread.id} onClick={() => setActiveThreadId(thread.id)} type="button">
                 <Avatar name={thread.name} size="sm" />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-3">
@@ -425,32 +634,52 @@ function InboxSection() {
                 </div>
                 {thread.unread ? <span className="mt-1 h-2.5 w-2.5 rounded-full bg-[#4f80ff]" /> : null}
               </button>
-            ))}
+            )) : (
+              <div className="p-6">
+                <EmptyState
+                  action={<GhostPill onClick={() => { setFilter('all'); setQuery(''); }}>Reset Filters</GhostPill>}
+                  description="No conversation matches the current inbox filters."
+                  icon={Mail}
+                  title="Inbox is clear"
+                />
+              </div>
+            )}
           </div>
         </ShellCard>
         <ShellCard>
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <Avatar name={activeThread.name} size="lg" />
-              <div>
-                <p className="text-xl font-black tracking-[-0.03em] text-[#20253a]">{activeThread.name}</p>
-                <p className="text-sm font-semibold text-[#8b93a8]">{activeThread.role}</p>
+          {activeThread ? (
+            <>
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <Avatar name={activeThread.name} size="lg" />
+                  <div>
+                    <p className="text-xl font-black tracking-[-0.03em] text-[#20253a]">{activeThread.name}</p>
+                    <p className="text-sm font-semibold text-[#8b93a8]">{activeThread.role}</p>
+                  </div>
+                </div>
+                <GhostPill onClick={() => showToast({ title: 'Notification sent', description: `Pinged ${activeThread.name} from the inbox.` })}><BellDot className="h-4 w-4" />Notify</GhostPill>
               </div>
-            </div>
-            <GhostPill><BellDot className="h-4 w-4" />Notify</GhostPill>
-          </div>
-          <div className="mt-6 rounded-[24px] bg-[#f8fafe] p-5">
-            <p className="text-sm font-bold uppercase tracking-[0.14em] text-[#9aa4bb]">Latest message</p>
-            <h2 className="mt-3 text-2xl font-black tracking-[-0.03em] text-[#20253a]">{activeThread.subject}</h2>
-            <div className="mt-5 space-y-4 text-sm font-semibold leading-7 text-[#6f7b96]">
-              <p>I pushed a cleaner version of the order layout so it sits more closely against the Figma reference: softer card edges, thinner dividers, and reduced contrast in the table headers.</p>
-              <p>Please verify the October figures and the badge colors before we ship the next pass to QA. The Products and Favorites pages are already using the same visual tokens.</p>
-            </div>
-          </div>
-          <div className="mt-6 grid gap-4 md:grid-cols-2">
-            <SmallStat detail="Average response in 11 mins" icon={LifeBuoy} label="Response" tone="success" value="98%" />
-            <SmallStat detail="Shared across 4 teams" icon={FolderKanban} label="Projects" tone="brand" value="12" />
-          </div>
+              <div className="mt-6 rounded-[24px] bg-[#f8fafe] p-5">
+                <p className="text-sm font-bold uppercase tracking-[0.14em] text-[#9aa4bb]">Latest message</p>
+                <h2 className="mt-3 text-2xl font-black tracking-[-0.03em] text-[#20253a]">{activeThread.subject}</h2>
+                <div className="mt-5 space-y-4 text-sm font-semibold leading-7 text-[#6f7b96]">
+                  <p>I pushed a cleaner version of the order layout so it sits more closely against the Figma reference: softer card edges, thinner dividers, and reduced contrast in the table headers.</p>
+                  <p>Please verify the October figures and the badge colors before we ship the next pass to QA. The Products and Favorites pages are already using the same visual tokens.</p>
+                </div>
+              </div>
+              <div className="mt-6 grid gap-4 md:grid-cols-2">
+                <SmallStat detail="Average response in 11 mins" icon={LifeBuoy} label="Response" tone="success" value="98%" />
+                <SmallStat detail="Shared across 4 teams" icon={FolderKanban} label="Projects" tone="brand" value="12" />
+              </div>
+            </>
+          ) : (
+            <EmptyState
+              action={<GhostPill onClick={() => { setFilter('all'); setQuery(''); }}>View All Threads</GhostPill>}
+              description="Adjust the search or filter and a conversation preview will appear here."
+              icon={Mail}
+              title="No thread selected"
+            />
+          )}
         </ShellCard>
       </div>
     </div>
@@ -458,6 +687,12 @@ function InboxSection() {
 }
 
 function OrderListsSection() {
+  const { showToast } = useContext(UIContext);
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [selectedOrderId, setSelectedOrderId] = useState(tableRows[0].id);
+  const visibleRows = tableRows.filter((row) => statusFilter === 'All' || row.status === statusFilter);
+  const selectedOrder = visibleRows.find((row) => row.id === selectedOrderId) || visibleRows[0] || null;
+
   return (
     <div className="space-y-7">
       <PageHeader title="Order Lists" description="A fuller orders surface with the same crisp table treatments shown in the dashboard frame." />
@@ -471,23 +706,76 @@ function OrderListsSection() {
             <p className="mt-1 text-sm font-semibold text-[#8b93a8]">Every order entry uses the same compact white table rhythm.</p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <GhostPill active>Delivered</GhostPill>
-            <GhostPill>Processing</GhostPill>
-            <GhostPill>Pending</GhostPill>
+            {['All', 'Paid', 'Pending', 'Refunded'].map((status) => (
+              <GhostPill active={statusFilter === status} key={status} onClick={() => setStatusFilter(status)}>
+                {status}
+              </GhostPill>
+            ))}
           </div>
         </div>
         <div className="overflow-x-auto px-6 py-5">
           <table className="min-w-full">
             <thead><tr className="bg-[#f5f7fb] text-left">{['Order ID', 'Product', 'Customer', 'Amount', 'Payment', 'Status'].map((label) => <th className="px-4 py-3 text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#8d98b1]" key={label}>{label}</th>)}</tr></thead>
-            <tbody>{tableRows.map((row) => <tr className="border-b border-[color:var(--border)] last:border-b-0" key={row.id}><td className="px-4 py-4 text-sm font-extrabold text-[#20253a]">{row.id}</td><td className="px-4 py-4 text-sm font-extrabold text-[#20253a]">{row.product}</td><td className="px-4 py-4 text-sm font-semibold text-[#6f7b96]">{row.customer}</td><td className="px-4 py-4 text-sm font-extrabold text-[#20253a]">{formatCurrency(row.amount)}</td><td className="px-4 py-4 text-sm font-semibold text-[#6f7b96]">{row.method}</td><td className="px-4 py-4"><StatusBadge>{row.status}</StatusBadge></td></tr>)}</tbody>
+            <tbody>
+              {visibleRows.length ? visibleRows.map((row) => (
+                <tr
+                  className={cx('cursor-pointer border-b border-[color:var(--border)] transition hover:bg-[#fafcff] last:border-b-0', selectedOrder?.id === row.id && 'bg-[#f7faff]')}
+                  key={row.id}
+                  onClick={() => setSelectedOrderId(row.id)}
+                >
+                  <td className="px-4 py-4 text-sm font-extrabold text-[#20253a]">{row.id}</td>
+                  <td className="px-4 py-4 text-sm font-extrabold text-[#20253a]">{row.product}</td>
+                  <td className="px-4 py-4 text-sm font-semibold text-[#6f7b96]">{row.customer}</td>
+                  <td className="px-4 py-4 text-sm font-extrabold text-[#20253a]">{formatCurrency(row.amount)}</td>
+                  <td className="px-4 py-4 text-sm font-semibold text-[#6f7b96]">{row.method}</td>
+                  <td className="px-4 py-4"><StatusBadge>{row.status}</StatusBadge></td>
+                </tr>
+              )) : null}
+            </tbody>
           </table>
         </div>
+        {!visibleRows.length ? (
+          <div className="px-6 pb-6">
+            <EmptyState description="Change the payment filter to bring back the order list." icon={Package} title="No orders in this state" />
+          </div>
+        ) : null}
       </ShellCard>
+      {selectedOrder ? (
+        <ShellCard>
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-sm font-extrabold uppercase tracking-[0.16em] text-[#9aa4bb]">Selected Order</p>
+              <h2 className="mt-2 text-2xl font-black tracking-[-0.03em] text-[#20253a]">{selectedOrder.product}</h2>
+              <p className="mt-2 text-sm font-semibold text-[#7d88a3]">{selectedOrder.customer} paid via {selectedOrder.method}.</p>
+            </div>
+            <GhostPill onClick={() => showToast({ title: selectedOrder.id, description: `${selectedOrder.product} is currently marked as ${selectedOrder.status}.` })}>
+              Open Summary
+            </GhostPill>
+          </div>
+        </ShellCard>
+      ) : null}
     </div>
   );
 }
 
 function ProductStockSection() {
+  const initialTasks = [
+    'Confirm audio shipment with west warehouse',
+    'Update fallback quantities for camera accessories',
+    'Tag gaming consoles for weekend promotion',
+    'Archive obsolete serial number batches',
+  ];
+  const [stockTasks, setStockTasks] = useLocalStorage(
+    'controllusion_stock_tasks',
+    initialTasks.map((label, index) => ({ id: index + 1, label, done: false })),
+  );
+
+  function toggleTask(taskId) {
+    setStockTasks((current) =>
+      current.map((task) => (task.id === taskId ? { ...task, done: !task.done } : task)),
+    );
+  }
+
   return (
     <div className="space-y-7">
       <PageHeader title="Product Stock" description="Stock ratios, warehouse cues, and critical alerts built as clean admin dashboard widgets." />
@@ -512,16 +800,11 @@ function ProductStockSection() {
         <ShellCard>
           <h2 className="text-xl font-black tracking-[-0.03em] text-[#20253a]">Restock Checklist</h2>
           <div className="mt-6 space-y-4">
-            {[
-              'Confirm audio shipment with west warehouse',
-              'Update fallback quantities for camera accessories',
-              'Tag gaming consoles for weekend promotion',
-              'Archive obsolete serial number batches',
-            ].map((task) => (
-              <div className="flex items-center gap-3 rounded-[18px] border border-[color:var(--border)] bg-[#fbfcff] px-4 py-3.5" key={task}>
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#4f80ff] text-white"><Check className="h-3.5 w-3.5" /></span>
-                <span className="text-sm font-semibold text-[#5f6a85]">{task}</span>
-              </div>
+            {stockTasks.map((task) => (
+              <button className="flex w-full items-center gap-3 rounded-[18px] border border-[color:var(--border)] bg-[#fbfcff] px-4 py-3.5 text-left" key={task.id} onClick={() => toggleTask(task.id)} type="button">
+                <span className={cx('flex h-6 w-6 items-center justify-center rounded-full text-white', task.done ? 'bg-[#16c098]' : 'bg-[#4f80ff]')}><Check className="h-3.5 w-3.5" /></span>
+                <span className={cx('text-sm font-semibold', task.done ? 'text-[#16c098] line-through' : 'text-[#5f6a85]')}>{task.label}</span>
+              </button>
             ))}
           </div>
         </ShellCard>
@@ -531,41 +814,64 @@ function ProductStockSection() {
 }
 
 function PricingSection() {
+  const { showToast } = useContext(UIContext);
+  const [selectedPlan, setSelectedPlan] = useLocalStorage('controllusion_selected_plan', 'Business');
+
   return (
     <div className="space-y-7">
       <PageHeader title="Pricing" description="Pricing cards, add-ons, and plan choices based on the same bright kit styling." />
       <div className="grid gap-5 xl:grid-cols-3">
-        {pricingPlans.map((plan) => (
-          <ShellCard className={cx('flex h-full flex-col', plan.featured && 'border-transparent bg-[linear-gradient(180deg,#4f80ff_0%,#3d69ea_100%)] text-white shadow-[0_28px_70px_-36px_rgba(79,128,255,0.55)]')} key={plan.name}>
+        {pricingPlans.map((plan) => {
+          const active = selectedPlan === plan.name;
+          return (
+          <ShellCard className={cx('flex h-full flex-col', (plan.featured || active) && 'border-transparent bg-[linear-gradient(180deg,#4f80ff_0%,#3d69ea_100%)] text-white shadow-[0_28px_70px_-36px_rgba(79,128,255,0.55)]')} key={plan.name}>
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className={cx('text-sm font-extrabold uppercase tracking-[0.14em]', plan.featured ? 'text-white/75' : 'text-[#9aa4bb]')}>{plan.name}</p>
-                <h2 className={cx('mt-4 text-[40px] font-black tracking-[-0.04em]', plan.featured ? 'text-white' : 'text-[#20253a]')}>{plan.price}</h2>
+                <p className={cx('text-sm font-extrabold uppercase tracking-[0.14em]', (plan.featured || active) ? 'text-white/75' : 'text-[#9aa4bb]')}>{plan.name}</p>
+                <h2 className={cx('mt-4 text-[40px] font-black tracking-[-0.04em]', (plan.featured || active) ? 'text-white' : 'text-[#20253a]')}>{plan.price}</h2>
               </div>
-              <div className={cx('rounded-full px-3 py-1 text-xs font-extrabold', plan.featured ? 'bg-white/18 text-white' : 'bg-[#eef3ff] text-[#4f80ff]')}>Monthly</div>
+              <div className={cx('rounded-full px-3 py-1 text-xs font-extrabold', (plan.featured || active) ? 'bg-white/18 text-white' : 'bg-[#eef3ff] text-[#4f80ff]')}>Monthly</div>
             </div>
-            <p className={cx('mt-4 text-sm font-semibold leading-7', plan.featured ? 'text-white/80' : 'text-[#7d88a3]')}>{plan.description}</p>
+            <p className={cx('mt-4 text-sm font-semibold leading-7', (plan.featured || active) ? 'text-white/80' : 'text-[#7d88a3]')}>{plan.description}</p>
             <div className="mt-6 space-y-3">
               {plan.features.map((feature) => (
                 <div className="flex items-center gap-3" key={feature}>
-                  <span className={cx('flex h-6 w-6 items-center justify-center rounded-full', plan.featured ? 'bg-white/16 text-white' : 'bg-[#eef3ff] text-[#4f80ff]')}>
+                  <span className={cx('flex h-6 w-6 items-center justify-center rounded-full', (plan.featured || active) ? 'bg-white/16 text-white' : 'bg-[#eef3ff] text-[#4f80ff]')}>
                     <Check className="h-3.5 w-3.5" />
                   </span>
-                  <span className={cx('text-sm font-semibold', plan.featured ? 'text-white' : 'text-[#5f6a85]')}>{feature}</span>
+                  <span className={cx('text-sm font-semibold', (plan.featured || active) ? 'text-white' : 'text-[#5f6a85]')}>{feature}</span>
                 </div>
               ))}
             </div>
-            <button className={cx('mt-8 inline-flex h-12 items-center justify-center rounded-[16px] px-5 text-sm font-extrabold transition', plan.featured ? 'bg-white text-[#3d69ea] hover:bg-white/90' : 'bg-[#4f80ff] text-white hover:bg-[#3d69ea]')} type="button">
+            <button className={cx('mt-8 inline-flex h-12 items-center justify-center rounded-[16px] px-5 text-sm font-extrabold transition', (plan.featured || active) ? 'bg-white text-[#3d69ea] hover:bg-white/90' : 'bg-[#4f80ff] text-white hover:bg-[#3d69ea]')} onClick={() => { setSelectedPlan(plan.name); showToast({ title: `${plan.name} selected`, description: 'Plan state updated in the dashboard.' }); }} type="button">
               {plan.button}
             </button>
           </ShellCard>
-        ))}
+        )})}
       </div>
     </div>
   );
 }
 
 function CalenderSection() {
+  const { showToast } = useContext(UIContext);
+  const [selectedDay, setSelectedDay] = useState(8);
+  const [viewMode, setViewMode] = useState('month');
+  const [events, setEvents] = useLocalStorage('controllusion_calendar_events', calendarSchedule);
+  const visibleWeeks = viewMode === 'month'
+    ? calendarWeeks
+    : calendarWeeks.filter((week) => week.some((day) => !day.muted && day.day === selectedDay));
+
+  function addEvent() {
+    const nextEvent = {
+      title: `Quick sync for Oct ${selectedDay}`,
+      time: '04:30 PM',
+      detail: 'Auto-created from the calendar CTA',
+    };
+    setEvents((current) => [nextEvent, ...current].slice(0, 5));
+    showToast({ title: 'Event created', description: `Added a new event for October ${selectedDay}.` });
+  }
+
   return (
     <div className="space-y-7">
       <PageHeader title="Calender" description="A calendar board and day schedule that continue the exact rounded dashboard tone." />
@@ -576,18 +882,21 @@ function CalenderSection() {
               <h2 className="text-xl font-black tracking-[-0.03em] text-[#20253a]">October 2026</h2>
               <p className="mt-1 text-sm font-semibold text-[#8b93a8]">Meetings, syncs, and billing moments.</p>
             </div>
-            <GhostPill active>Month View</GhostPill>
+            <div className="flex flex-wrap gap-3">
+              <GhostPill active={viewMode === 'month'} onClick={() => setViewMode('month')}>Month View</GhostPill>
+              <GhostPill active={viewMode === 'week'} onClick={() => setViewMode('week')}>Week View</GhostPill>
+            </div>
           </div>
           <div className="mt-6 grid grid-cols-7 gap-3 text-center text-xs font-extrabold uppercase tracking-[0.14em] text-[#9aa4bb]">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => <span key={day}>{day}</span>)}
           </div>
           <div className="mt-4 space-y-3">
-            {calendarWeeks.map((week, index) => (
+            {visibleWeeks.map((week, index) => (
               <div className="grid grid-cols-7 gap-3" key={index}>
                 {week.map((day) => (
-                  <div className={cx('flex aspect-square items-start justify-end rounded-[18px] border p-3 text-sm font-extrabold', day.active ? 'border-[#4f80ff] bg-[#4f80ff] text-white' : day.highlight ? 'border-[#dfe7fb] bg-[#f6f8ff] text-[#20253a]' : 'border-[color:var(--border)] bg-white text-[#20253a]', day.muted && !day.active && 'text-[#c5cbda]')} key={day.day}>
+                  <button className={cx('flex aspect-square w-full items-start justify-end rounded-[18px] border p-3 text-sm font-extrabold', selectedDay === day.day && !day.muted ? 'border-[#4f80ff] bg-[#4f80ff] text-white' : day.highlight ? 'border-[#dfe7fb] bg-[#f6f8ff] text-[#20253a]' : 'border-[color:var(--border)] bg-white text-[#20253a]', day.muted && selectedDay !== day.day && 'text-[#c5cbda]')} key={day.day} onClick={() => !day.muted && setSelectedDay(day.day)} type="button">
                     {day.day}
-                  </div>
+                  </button>
                 ))}
               </div>
             ))}
@@ -597,12 +906,12 @@ function CalenderSection() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <h2 className="text-xl font-black tracking-[-0.03em] text-[#20253a]">Today Schedule</h2>
-              <p className="mt-1 text-sm font-semibold text-[#8b93a8]">Tuesday, October 8</p>
+              <p className="mt-1 text-sm font-semibold text-[#8b93a8]">October {selectedDay}, 2026</p>
             </div>
-            <GhostPill><CalendarClock className="h-4 w-4" />Add Event</GhostPill>
+            <GhostPill onClick={addEvent}><CalendarClock className="h-4 w-4" />Add Event</GhostPill>
           </div>
           <div className="mt-6 space-y-4">
-            {calendarSchedule.map((item) => (
+            {events.map((item) => (
               <div className="rounded-[22px] border border-[color:var(--border)] bg-[#fbfcff] p-4" key={item.title}>
                 <div className="flex items-center justify-between gap-3">
                   <div>
@@ -621,23 +930,57 @@ function CalenderSection() {
 }
 
 function TodoSection() {
+  const { showToast } = useContext(UIContext);
+  const [boards, setBoards] = useLocalStorage('controllusion_todo_boards', todoColumns);
+  const [taskTemplateIndex, setTaskTemplateIndex] = useState(0);
+
+  function moveItem(columnIndex, itemIndex) {
+    setBoards((current) => {
+      const next = current.map((column) => ({ ...column, items: [...column.items] }));
+      const [item] = next[columnIndex].items.splice(itemIndex, 1);
+      const targetIndex = columnIndex === next.length - 1 ? 0 : columnIndex + 1;
+      next[targetIndex].items.unshift(item);
+      return next;
+    });
+  }
+
+  function addTask() {
+    const nextTask = todoTemplates[taskTemplateIndex % todoTemplates.length];
+
+    setBoards((current) => {
+      const next = current.map((column) => ({ ...column, items: [...column.items] }));
+      next[0].items.unshift(nextTask);
+      return next;
+    });
+
+    setTaskTemplateIndex((current) => current + 1);
+    showToast({
+      title: 'Task added',
+      description: 'A new item was created in the To Do column.',
+    });
+  }
+
   return (
     <div className="space-y-7">
-      <PageHeader title="To-Do" description="A kanban-flavored to-do board that still looks like a natural page in the same kit." />
+      <PageHeader
+        title="To-Do"
+        description="A kanban-flavored to-do board that still looks like a natural page in the same kit."
+        actions={<GhostPill active onClick={addTask}><Target className="h-4 w-4" />Add Task</GhostPill>}
+      />
       <div className="grid gap-5 md:grid-cols-3">
-        <SmallStat detail="Focus this morning" icon={Target} label="Priority" tone="brand" value="06" />
-        <SmallStat detail="Currently moving" icon={PlayCircle} label="In Progress" tone="warning" value="08" />
-        <SmallStat detail="Completed today" icon={ShieldCheck} label="Done" tone="success" value="14" />
+        <SmallStat detail="Focus this morning" icon={Target} label="Priority" tone="brand" value={String(boards[0]?.items.length || 0).padStart(2, '0')} />
+        <SmallStat detail="Currently moving" icon={PlayCircle} label="In Progress" tone="warning" value={String(boards[1]?.items.length || 0).padStart(2, '0')} />
+        <SmallStat detail="Completed today" icon={ShieldCheck} label="Done" tone="success" value={String(boards[2]?.items.length || 0).padStart(2, '0')} />
       </div>
       <div className="grid gap-5 xl:grid-cols-3">
-        {todoColumns.map((column, index) => (
+        {boards.map((column, index) => (
           <ShellCard key={column.title}>
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-black tracking-[-0.03em] text-[#20253a]">{column.title}</h2>
               <span className={cx('rounded-full px-3 py-1 text-xs font-extrabold', index === 0 ? 'bg-[#eef3ff] text-[#4f80ff]' : index === 1 ? 'bg-[#fff5e5] text-[#ffb648]' : 'bg-[#eaf9f3] text-[#16c098]')}>{column.items.length}</span>
             </div>
             <div className="mt-6 space-y-4">
-              {column.items.map((item) => <div className="rounded-[22px] border border-[color:var(--border)] bg-[#fbfcff] p-4" key={item}><p className="text-sm font-extrabold leading-7 text-[#20253a]">{item}</p></div>)}
+              {column.items.map((item, itemIndex) => <button className="w-full rounded-[22px] border border-[color:var(--border)] bg-[#fbfcff] p-4 text-left" key={item} onClick={() => moveItem(index, itemIndex)} type="button"><p className="text-sm font-extrabold leading-7 text-[#20253a]">{item}</p><p className="mt-2 text-xs font-semibold text-[#8b93a8]">Click to move to the next column.</p></button>)}
             </div>
           </ShellCard>
         ))}
@@ -647,11 +990,22 @@ function TodoSection() {
 }
 
 function ContactSection() {
+  const { showToast } = useContext(UIContext);
+  const [contacts, setContacts] = useLocalStorage('controllusion_contacts', contactCards);
+  const [templateIndex, setTemplateIndex] = useState(0);
+
+  function addContact() {
+    const nextContact = contactTemplates[templateIndex % contactTemplates.length];
+    setContacts((current) => [nextContact, ...current]);
+    setTemplateIndex((current) => current + 1);
+    showToast({ title: 'Contact added', description: `${nextContact.name} was added to the directory.` });
+  }
+
   return (
     <div className="space-y-7">
-      <PageHeader title="Contact" description="Team contacts and internal stakeholders with the same calm spacing and white-card rhythm." actions={<GhostPill active><UserPlus className="h-4 w-4" />Add Contact</GhostPill>} />
+      <PageHeader title="Contact" description="Team contacts and internal stakeholders with the same calm spacing and white-card rhythm." actions={<GhostPill active onClick={addContact}><UserPlus className="h-4 w-4" />Add Contact</GhostPill>} />
       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-        {contactCards.map((person) => (
+        {contacts.map((person) => (
           <ShellCard className="text-center" key={person.email}>
             <div className="flex justify-center"><Avatar name={person.name} size="xl" /></div>
             <h2 className="mt-4 text-xl font-black tracking-[-0.03em] text-[#20253a]">{person.name}</h2>
@@ -660,6 +1014,7 @@ function ContactSection() {
               <p>{person.email}</p>
               <p>{person.phone}</p>
             </div>
+            <button className="mt-5 inline-flex h-11 items-center justify-center rounded-[16px] border border-[color:var(--border)] bg-white px-4 text-sm font-extrabold text-[#20253a] transition hover:border-[#cfd7e9] hover:bg-[#fafcff]" onClick={() => showToast({ title: person.name, description: `Primary contact: ${person.email}` })} type="button">Open contact</button>
           </ShellCard>
         ))}
       </div>
@@ -668,13 +1023,72 @@ function ContactSection() {
 }
 
 function InvoiceSection() {
+  const { showToast } = useContext(UIContext);
   const subtotal = invoiceRows.reduce((sum, item) => sum + item.qty * item.rate, 0);
   const tax = subtotal * 0.1;
   const total = subtotal + tax;
 
+  function handleDownload() {
+    const invoiceMarkup = `
+      <html>
+        <head>
+          <title>Controllusion Invoice #3208</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 32px; color: #20253a; }
+            h1 { margin: 0 0 24px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 24px; }
+            th, td { border: 1px solid #eceff6; padding: 12px; text-align: left; }
+            th { background: #f5f7fb; }
+            .summary { margin-top: 24px; max-width: 320px; margin-left: auto; }
+            .summary div { display: flex; justify-content: space-between; padding: 8px 0; }
+          </style>
+        </head>
+        <body>
+          <h1>Controllusion Invoice #3208</h1>
+          <p>Issued: October 08, 2026</p>
+          <p>Due: October 15, 2026</p>
+          <table>
+            <thead>
+              <tr><th>Item</th><th>Qty</th><th>Rate</th><th>Amount</th></tr>
+            </thead>
+            <tbody>
+              ${invoiceRows.map((row) => `<tr><td>${row.name}</td><td>${row.qty}</td><td>${formatCurrency(row.rate)}</td><td>${formatCurrency(row.qty * row.rate)}</td></tr>`).join('')}
+            </tbody>
+          </table>
+          <div class="summary">
+            <div><span>Subtotal</span><strong>${formatCurrency(subtotal)}</strong></div>
+            <div><span>Tax 10%</span><strong>${formatCurrency(tax)}</strong></div>
+            <div><span>Grand Total</span><strong>${formatCurrency(total)}</strong></div>
+          </div>
+        </body>
+      </html>
+    `;
+
+    const printWindow = window.open('', '_blank', 'width=980,height=720');
+
+    if (!printWindow) {
+      showToast({
+        title: 'Popup blocked',
+        description: 'Allow popups to print the invoice as PDF.',
+        type: 'info',
+      });
+      return;
+    }
+
+    printWindow.document.write(invoiceMarkup);
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+
+    showToast({
+      title: 'Invoice ready',
+      description: 'The print dialog opened so you can save the invoice as PDF.',
+    });
+  }
+
   return (
     <div className="space-y-7">
-      <PageHeader title="Invoice" description="A billing surface styled like the rest of the kit: generous radius, quiet separators, bright canvas." actions={<><GhostPill active>Send Invoice</GhostPill><GhostPill>Download PDF</GhostPill></>} />
+      <PageHeader title="Invoice" description="A billing surface styled like the rest of the kit: generous radius, quiet separators, bright canvas." actions={<><GhostPill active onClick={() => showToast({ title: 'Invoice sent', description: 'Invoice #3208 was sent to the client.' })}>Send Invoice</GhostPill><GhostPill onClick={handleDownload}>Download PDF</GhostPill></>} />
       <div className="grid gap-5 xl:grid-cols-[1.08fr_0.92fr]">
         <ShellCard>
           <div className="flex flex-col gap-5 border-b border-[color:var(--border)] pb-6 sm:flex-row sm:items-start sm:justify-between">
@@ -723,6 +1137,16 @@ function InvoiceSection() {
 }
 
 function UiElementsSection() {
+  const { showToast } = useContext(UIContext);
+  const [buttonStyle, setButtonStyle] = useState('Primary');
+  const [progress, setProgress] = useState(76);
+  const previewClassName = {
+    Primary: 'bg-[#4f80ff] text-white hover:bg-[#3d69ea]',
+    Secondary: 'bg-[#eef3ff] text-[#4f80ff] hover:bg-[#dfe8ff]',
+    Ghost: 'border border-[color:var(--border)] bg-white text-[#20253a] hover:bg-[#fafcff]',
+    Rounded: 'rounded-full bg-[#20253a] text-white hover:bg-[#111827]',
+  }[buttonStyle];
+
   return (
     <div className="space-y-7">
       <PageHeader title="UI Elements" description="The public thumbnail exposes button, color, and control studies; this page turns them into a living kit." />
@@ -730,10 +1154,19 @@ function UiElementsSection() {
         <ShellCard>
           <h2 className="text-xl font-black tracking-[-0.03em] text-[#20253a]">Buttons</h2>
           <div className="mt-6 flex flex-wrap gap-3">
-            <GhostPill active>Primary</GhostPill>
-            <GhostPill>Secondary</GhostPill>
-            <GhostPill>Ghost</GhostPill>
-            <GhostPill>Rounded</GhostPill>
+            {['Primary', 'Secondary', 'Ghost', 'Rounded'].map((style) => (
+              <GhostPill active={buttonStyle === style} key={style} onClick={() => setButtonStyle(style)}>
+                {style}
+              </GhostPill>
+            ))}
+          </div>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <button className={cx('inline-flex h-11 items-center justify-center rounded-[16px] px-5 text-sm font-extrabold transition', previewClassName)} onClick={() => showToast({ title: `${buttonStyle} button`, description: 'The UI kit preview action fired successfully.' })} type="button">
+              Preview Action
+            </button>
+            <button className={cx('inline-flex h-11 items-center justify-center rounded-[16px] px-5 text-sm font-extrabold transition', previewClassName)} onClick={() => setProgress((current) => current >= 100 ? 16 : current + 8)} type="button">
+              Trigger State
+            </button>
           </div>
           <div className="mt-8">
             <h3 className="text-sm font-extrabold uppercase tracking-[0.16em] text-[#9aa4bb]">Color Scale</h3>
@@ -761,11 +1194,14 @@ function UiElementsSection() {
             <div className="rounded-[22px] border border-[color:var(--border)] bg-[#fbfcff] p-4">
               <div className="flex items-center justify-between text-sm font-bold text-[#6f7b96]">
                 <span>Upload Progress</span>
-                <span>76%</span>
+                <span>{progress}%</span>
               </div>
               <div className="mt-3">
-                <ProgressBar value={76} />
+                <ProgressBar value={progress} />
               </div>
+              <button className="mt-4 inline-flex h-10 items-center justify-center rounded-[14px] bg-[#4f80ff] px-4 text-sm font-extrabold text-white transition hover:bg-[#3d69ea]" onClick={() => setProgress((current) => current >= 100 ? 16 : current + 12)} type="button">
+                Advance preview
+              </button>
             </div>
           </div>
         </ShellCard>
@@ -775,22 +1211,43 @@ function UiElementsSection() {
 }
 
 function TeamSection() {
+  const { showToast } = useContext(UIContext);
+  const [members, setMembers] = useLocalStorage('controllusion_team_members', teamMembers);
+  const [memberTemplateIndex, setMemberTemplateIndex] = useState(0);
+
+  function inviteMember() {
+    const nextMember = teamTemplates[memberTemplateIndex % teamTemplates.length];
+    setMembers((current) => [nextMember, ...current]);
+    setMemberTemplateIndex((current) => current + 1);
+    showToast({ title: 'Invite created', description: `${nextMember.name} was added to the team list.` });
+  }
+
+  function cycleStatus(name) {
+    const statusOrder = ['Online', 'Away', 'Busy'];
+    setMembers((current) =>
+      current.map((member) => {
+        if (member.name !== name) return member;
+        const nextIndex = (statusOrder.indexOf(member.status) + 1) % statusOrder.length;
+        return { ...member, status: statusOrder[nextIndex] };
+      }),
+    );
+  }
   return (
     <div className="space-y-7">
-      <PageHeader title="Team" description="People cards and department summaries using the same palette and layout rules as the dashboard kit." actions={<GhostPill active><UserPlus className="h-4 w-4" />Invite Member</GhostPill>} />
+      <PageHeader title="Team" description="People cards and department summaries using the same palette and layout rules as the dashboard kit." actions={<GhostPill active onClick={inviteMember}><UserPlus className="h-4 w-4" />Invite Member</GhostPill>} />
       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-        {teamMembers.map((member) => (
+        {members.map((member) => (
           <ShellCard key={member.name}>
             <div className="flex items-center gap-4">
               <Avatar name={member.name} size="md" />
               <div>
                 <p className="text-lg font-black tracking-[-0.03em] text-[#20253a]">{member.name}</p>
-                <p className="text-sm font-semibold text-[#8b93a8]">{member.role} · {member.team}</p>
+                <p className="text-sm font-semibold text-[#8b93a8]">{member.role} / {member.team}</p>
               </div>
             </div>
             <div className="mt-5 flex items-center justify-between">
               <StatusBadge>{member.status}</StatusBadge>
-              <button className="text-[#b5bdcd]" type="button"><MoreHorizontal className="h-5 w-5" /></button>
+              <button className="text-[#b5bdcd]" onClick={() => cycleStatus(member.name)} type="button"><MoreHorizontal className="h-5 w-5" /></button>
             </div>
           </ShellCard>
         ))}
@@ -800,6 +1257,14 @@ function TeamSection() {
 }
 
 function TableSection() {
+  const [query, setQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('Paid');
+  const visibleRows = tableRows.filter((row) => {
+    const matchesStatus = statusFilter === 'All' || row.status === statusFilter;
+    const haystack = `${row.id} ${row.product} ${row.customer} ${row.method}`.toLowerCase();
+    return matchesStatus && haystack.includes(query.toLowerCase());
+  });
+
   return (
     <div className="space-y-7">
       <PageHeader title="Table" description="A dedicated wide table page for the transactions and orders that need denser presentation." />
@@ -807,20 +1272,32 @@ function TableSection() {
         <div className="flex flex-col gap-4 border-b border-[color:var(--border)] px-6 py-5 lg:flex-row lg:items-center lg:justify-between">
           <div className="relative w-full max-w-md">
             <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#aab4c8]" />
-            <input className="h-12 w-full rounded-[18px] border border-[color:var(--border)] bg-[#fbfcff] pl-11 pr-4 text-sm font-semibold text-[#20253a] outline-none placeholder:text-[#b5bdcd]" placeholder="Search table data" type="text" />
+            <input className="h-12 w-full rounded-[18px] border border-[color:var(--border)] bg-[#fbfcff] pl-11 pr-4 text-sm font-semibold text-[#20253a] outline-none placeholder:text-[#b5bdcd]" onChange={(event) => setQuery(event.target.value)} placeholder="Search table data" type="text" value={query} />
           </div>
           <div className="flex flex-wrap gap-3">
-            <GhostPill active>Paid</GhostPill>
-            <GhostPill>Pending</GhostPill>
-            <GhostPill>Refunded</GhostPill>
+            {['All', 'Paid', 'Pending', 'Refunded'].map((status) => (
+              <GhostPill active={statusFilter === status} key={status} onClick={() => setStatusFilter(status)}>
+                {status}
+              </GhostPill>
+            ))}
           </div>
         </div>
         <div className="overflow-x-auto px-6 py-5">
           <table className="min-w-full">
             <thead><tr className="bg-[#f5f7fb] text-left">{['Transaction', 'Product', 'Customer', 'Amount', 'Method', 'Status'].map((label) => <th className="px-4 py-3 text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#8d98b1]" key={label}>{label}</th>)}</tr></thead>
-            <tbody>{tableRows.map((row) => <tr className="border-b border-[color:var(--border)] last:border-b-0" key={row.id}><td className="px-4 py-4 text-sm font-extrabold text-[#20253a]">{row.id}</td><td className="px-4 py-4 text-sm font-extrabold text-[#20253a]">{row.product}</td><td className="px-4 py-4 text-sm font-semibold text-[#6f7b96]">{row.customer}</td><td className="px-4 py-4 text-sm font-extrabold text-[#20253a]">{formatCurrency(row.amount)}</td><td className="px-4 py-4 text-sm font-semibold text-[#6f7b96]">{row.method}</td><td className="px-4 py-4"><StatusBadge>{row.status}</StatusBadge></td></tr>)}</tbody>
+            <tbody>{visibleRows.map((row) => <tr className="border-b border-[color:var(--border)] last:border-b-0" key={row.id}><td className="px-4 py-4 text-sm font-extrabold text-[#20253a]">{row.id}</td><td className="px-4 py-4 text-sm font-extrabold text-[#20253a]">{row.product}</td><td className="px-4 py-4 text-sm font-semibold text-[#6f7b96]">{row.customer}</td><td className="px-4 py-4 text-sm font-extrabold text-[#20253a]">{formatCurrency(row.amount)}</td><td className="px-4 py-4 text-sm font-semibold text-[#6f7b96]">{row.method}</td><td className="px-4 py-4"><StatusBadge>{row.status}</StatusBadge></td></tr>)}</tbody>
           </table>
         </div>
+        {!visibleRows.length ? (
+          <div className="px-6 pb-6">
+            <EmptyState
+              action={<GhostPill onClick={() => { setQuery(''); setStatusFilter('All'); }}>Clear Search</GhostPill>}
+              description="Try a different search term or payment status."
+              icon={Search}
+              title="No transactions matched"
+            />
+          </div>
+        ) : null}
       </ShellCard>
     </div>
   );

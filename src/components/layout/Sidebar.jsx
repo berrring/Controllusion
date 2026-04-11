@@ -54,7 +54,7 @@ function SidebarContent({ onNavigate }) {
     <div className="flex h-full flex-col bg-white">
       <div className="px-8 pb-6 pt-7">
         <Link className="text-[24px] font-black tracking-[-0.04em] text-[#4f80ff]" onClick={onNavigate} to="/dashboard">
-          Controllussion
+          Controllusion
         </Link>
       </div>
 
