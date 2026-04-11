@@ -1,29 +1,29 @@
 import { useContext } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { X } from 'lucide-react';
-import { APP_NAV_ITEMS, ADMIN_NAV_ITEM } from '../../utils/constants';
-import { useAuth } from '../../hooks/useAuth';
 import { UIContext } from '../../context/UIContext';
+import { useAuth } from '../../hooks/useAuth';
+import { WORKSPACE_NAVIGATION } from '../../utils/workspace';
 
-function SidebarSection({ items, label, onNavigate }) {
+function SidebarNavGroup({ items, label, onNavigate }) {
   return (
     <div className="mt-8 first:mt-0">
-      <p className="section-label px-4">{label}</p>
-      <div className="mt-3 space-y-1.5">
+      {label ? <p className="px-8 text-[11px] font-black uppercase tracking-[0.18em] text-[#b5bdcd]">{label}</p> : null}
+      <div className="mt-3 space-y-1.5 px-4">
         {items.map((item) => (
           <NavLink
             className={({ isActive }) =>
-              `mx-3 flex items-center gap-3 rounded-[14px] px-4 py-3 text-sm font-bold transition ${
+              `flex items-center gap-3 rounded-[12px] px-4 py-3 text-[14px] font-extrabold transition ${
                 isActive
-                  ? 'bg-brand-600 text-white shadow-soft'
-                  : 'text-slate-500 hover:bg-[rgba(79,128,255,0.08)] hover:text-slate-900'
+                  ? 'bg-[#4f80ff] text-white shadow-[0_18px_35px_-24px_rgba(79,128,255,0.7)]'
+                  : 'text-[#68748f] hover:bg-[#f5f8ff] hover:text-[#20253a]'
               }`
             }
-            key={item.to}
+            key={item.path}
             onClick={onNavigate}
-            to={item.to}
+            to={item.path}
           >
-            <item.icon className="h-4 w-4 shrink-0" />
+            <item.icon className="h-[17px] w-[17px]" />
             <span>{item.label}</span>
           </NavLink>
         ))}
@@ -33,36 +33,62 @@ function SidebarSection({ items, label, onNavigate }) {
 }
 
 function SidebarContent({ onNavigate }) {
-  const { user } = useAuth();
-  const mainItems = APP_NAV_ITEMS.filter((item) => item.to === '/dashboard');
-  const pageItems = APP_NAV_ITEMS.filter((item) => item.to !== '/dashboard');
-  const adminItems = user?.role === 'Admin' ? [ADMIN_NAV_ITEM] : [];
+  const navigate = useNavigate();
+  const { logoutUser } = useAuth();
+  const { showToast } = useContext(UIContext);
+  const SettingsIcon = WORKSPACE_NAVIGATION.footer[0].icon;
+  const LogoutIcon = WORKSPACE_NAVIGATION.footer[1].icon;
+
+  async function handleLogout() {
+    await logoutUser();
+    showToast({
+      title: 'Signed out',
+      description: 'Your session has been cleared.',
+      type: 'info',
+    });
+    onNavigate?.();
+    navigate('/login');
+  }
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="border-b border-[color:var(--border)] px-7 py-7">
-        <Link className="flex items-center gap-3" onClick={onNavigate} to="/">
-          <div className="flex h-11 w-11 items-center justify-center rounded-[16px] bg-brand-50 text-sm font-extrabold text-brand-700">
-            C
-          </div>
-          <div>
-            <p className="text-[17px] font-extrabold tracking-tight text-brand-600">Controllusion</p>
-            <p className="text-xs font-semibold text-muted">Revenue workspace</p>
-          </div>
+    <div className="flex h-full flex-col bg-white">
+      <div className="px-8 pb-6 pt-7">
+        <Link className="text-[24px] font-black tracking-[-0.04em] text-[#4f80ff]" onClick={onNavigate} to="/dashboard">
+          Controllussion
         </Link>
       </div>
 
-      <div className="flex-1 overflow-y-auto py-5">
-        <SidebarSection items={mainItems} label="Main" onNavigate={onNavigate} />
-        <SidebarSection items={pageItems} label="Pages" onNavigate={onNavigate} />
-        {adminItems.length ? <SidebarSection items={adminItems} label="System" onNavigate={onNavigate} /> : null}
+      <div className="flex-1 overflow-y-auto border-t border-[color:var(--border)] py-6">
+        <SidebarNavGroup items={WORKSPACE_NAVIGATION.primary} onNavigate={onNavigate} />
+        <SidebarNavGroup items={WORKSPACE_NAVIGATION.secondary} label="Pages" onNavigate={onNavigate} />
       </div>
 
-      <div className="mx-3 mb-4 rounded-[22px] bg-[linear-gradient(180deg,#f8fbff_0%,#eff4ff_100%)] p-4">
-        <p className="text-sm font-extrabold text-[var(--text)]">Daily CRM flow</p>
-        <p className="mt-2 text-xs leading-6 text-muted">
-          Dashboard, customer records, profile settings, and admin access all use the same Figma-inspired shell.
-        </p>
+      <div className="border-t border-[color:var(--border)] px-4 py-5">
+        <div className="space-y-1.5">
+          <NavLink
+            className={({ isActive }) =>
+              `flex items-center gap-3 rounded-[12px] px-4 py-3 text-[14px] font-extrabold transition ${
+                isActive
+                  ? 'bg-[#f5f8ff] text-[#20253a]'
+                  : 'text-[#68748f] hover:bg-[#f5f8ff] hover:text-[#20253a]'
+              }`
+            }
+            onClick={onNavigate}
+            to={WORKSPACE_NAVIGATION.footer[0].path}
+          >
+            <SettingsIcon className="h-[17px] w-[17px]" />
+            <span>{WORKSPACE_NAVIGATION.footer[0].label}</span>
+          </NavLink>
+
+          <button
+            className="flex w-full items-center gap-3 rounded-[12px] px-4 py-3 text-left text-[14px] font-extrabold text-[#68748f] transition hover:bg-[#f5f8ff] hover:text-[#20253a]"
+            onClick={handleLogout}
+            type="button"
+          >
+            <LogoutIcon className="h-[17px] w-[17px]" />
+            <span>{WORKSPACE_NAVIGATION.footer[1].label}</span>
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -73,20 +99,16 @@ function Sidebar() {
 
   return (
     <>
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[250px] border-r border-[color:var(--border)] bg-white/92 backdrop-blur lg:block">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[228px] border-r border-[color:var(--border)] bg-white lg:block">
         <SidebarContent />
       </aside>
 
       {sidebarOpen ? (
         <div className="fixed inset-0 z-50 lg:hidden">
-          <button aria-label="Close navigation" className="absolute inset-0 bg-slate-900/24" onClick={() => setSidebarOpen(false)} type="button" />
-          <aside className="absolute inset-y-0 left-0 w-[18rem] bg-white shadow-[0_24px_60px_-30px_rgba(15,23,42,0.28)]">
+          <button aria-label="Close navigation" className="absolute inset-0 bg-slate-900/28" onClick={() => setSidebarOpen(false)} type="button" />
+          <aside className="absolute inset-y-0 left-0 w-[18rem] bg-white shadow-[0_24px_60px_-30px_rgba(15,23,42,0.3)]">
             <div className="flex justify-end px-4 pt-4">
-              <button
-                className="rounded-[14px] p-2 text-muted transition hover:bg-slate-100"
-                onClick={() => setSidebarOpen(false)}
-                type="button"
-              >
+              <button className="rounded-[14px] p-2 text-[#7d88a3] transition hover:bg-slate-100" onClick={() => setSidebarOpen(false)} type="button">
                 <X className="h-5 w-5" />
               </button>
             </div>

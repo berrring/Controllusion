@@ -68,7 +68,7 @@ function LoginPage() {
 
           <h1 className="text-3xl font-black tracking-tight text-[var(--text)]">Welcome back</h1>
           <p className="mt-2 text-sm leading-7 text-muted">
-            Use your workspace email and password to continue into the dashboard and customer workflows.
+            Use your workspace email and password to continue into the rebuilt Controllussion admin dashboard.
           </p>
 
           <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
@@ -124,10 +124,10 @@ function LoginPage() {
           <div className="rounded-[28px] bg-[linear-gradient(180deg,#f7faff_0%,#eff4ff_100%)] p-5 sm:p-6">
             <p className="text-sm font-extrabold uppercase tracking-[0.16em] text-brand-600">Dashboard preview</p>
             <h2 className="mt-5 text-3xl font-black tracking-tight text-[var(--text)]">
-              The restyled CRM now follows the same bright admin direction as the Figma frame.
+              The whole project now follows the same bright admin direction as the Figma dashboard kit.
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-muted">
-              Shell, cards, tables, forms, and account screens all inherit the same visual language.
+              Sidebar, topbar, products, inbox, pricing, calendar, tables, and settings now share one visual language.
             </p>
 
             <div className="mt-6 grid gap-4 sm:grid-cols-2">

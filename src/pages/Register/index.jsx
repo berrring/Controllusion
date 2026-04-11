@@ -70,7 +70,7 @@ function RegisterPage() {
 
           <h1 className="text-3xl font-black tracking-tight text-[var(--text)]">Create an account</h1>
           <p className="mt-2 text-sm leading-7 text-muted">
-            Start with a new user account and move straight into the redesigned CRM experience.
+            Start with a new user account and move straight into the redesigned admin dashboard experience.
           </p>
 
           <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
@@ -130,18 +130,18 @@ function RegisterPage() {
           <div className="rounded-[28px] bg-[linear-gradient(180deg,#f7faff_0%,#eff4ff_100%)] p-5 sm:p-6">
             <p className="text-sm font-extrabold uppercase tracking-[0.16em] text-brand-600">Get started</p>
             <h2 className="mt-5 text-3xl font-black tracking-tight text-[var(--text)]">
-              Create a session and enter the updated CRM without extra setup.
+              Create a session and enter the updated dashboard kit without extra setup.
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-muted">
-              Registration activates a user session immediately, so the first screen after signup is the rebuilt dashboard shell.
+              Registration activates a user session immediately, so the first screen after signup is the rebuilt Controllussion shell.
             </p>
 
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
               {[
                 'Shared blue-and-white admin theme',
                 'Responsive dashboard and tables',
-                'Customer create and edit forms',
-                'Profile and admin management views',
+                'Products, inbox, and pricing pages',
+                'Settings and account management views',
               ].map((item) => (
                 <div className="rounded-[18px] bg-white px-4 py-4 text-sm font-semibold text-slate-700 shadow-[0_20px_40px_-32px_rgba(17,24,39,0.18)]" key={item}>
                   {item}

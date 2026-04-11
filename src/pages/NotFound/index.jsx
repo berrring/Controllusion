@@ -14,11 +14,11 @@ function NotFoundPage() {
             <p className="mt-6 text-sm font-extrabold uppercase tracking-[0.18em] text-brand-600">404</p>
             <h1 className="mt-3 text-4xl font-black tracking-tight text-[var(--text)]">That page is off the map.</h1>
             <p className="mt-4 max-w-lg text-base leading-8 text-muted">
-              The route you requested does not exist in this workspace. Return to the homepage or jump back into the CRM dashboard.
+              The route you requested does not exist in this workspace. Return to sign in or jump back into the dashboard shell.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link to="/">
-                <Button>Go home</Button>
+              <Link to="/login">
+                <Button>Open login</Button>
               </Link>
               <Link to="/dashboard">
                 <Button variant="secondary">Open dashboard</Button>
