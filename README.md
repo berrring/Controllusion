@@ -1,333 +1,366 @@
-# Controllusion
+# Controllusion CRM
 
-Controllusion is a front-end CRM workspace built with React and Vite. It ships with a polished landing page, authentication, protected application routes, customer CRUD flows, a profile area, and an admin panel, all backed by a mock API that persists data in `localStorage`.
+Controllusion is a full-stack CRM application built as a monorepo with a React frontend and a Spring Boot backend. The project is focused on a clean college-final scope: authentication, dashboard metrics, customer management, profile editing, and admin user management.
 
-The project is designed to feel like a production admin dashboard while still running as a self-contained static app. There is no external database, no separate backend service, and no setup beyond installing dependencies.
+This repository is structured for real deployment:
+- `frontend` -> Vercel-ready React + Vite SPA
+- `backend` -> Render-ready Spring Boot + PostgreSQL API
 
 ## Preview
 
-![Controllusion dashboard preview](./public/figma-dashboard-preview.png)
+![Controllusion dashboard preview](./frontend/public/figma-dashboard-preview.png)
 
-## What This App Includes
+## Core Features
 
-- Public marketing-style landing page
-- Login and registration flows
-- Session-aware protected routes
-- Role-gated admin route
-- Customer list with search, filter, sort, pagination, and row actions
-- Customer create, edit, detail, and delete workflows
-- Customer timeline, deal, and notes views
-- Profile editing and password change forms
-- Admin user management with role changes, access toggles, and invites
-- Toast notifications, loading states, empty states, and error states
-- Browser-persistent mock data using `localStorage`
+- JWT authentication with login, registration, session restore, and logout
+- Protected routes and role-based admin access
+- Dashboard with backend-powered summary metrics
+- Customer CRUD with search, filter, sort, and detail view
+- Profile update and password change
+- Admin user listing, invite/create flow, role updates, and enable/disable actions
+- Validation, loading states, empty states, and error states
+- Swagger UI for API testing
+- PostgreSQL persistence with Flyway migrations and seed data
 
-## Demo Accounts
+## Monorepo Structure
 
-Use these seeded accounts after the first app load:
-
-| Role | Email | Password | Notes |
-| --- | --- | --- | --- |
-| Admin | `admin@controllusion.com` | `Admin@123` | Full access, including `/admin` |
-| User | `sara@controllusion.com` | `User@1234` | Standard protected user access |
-| User | `ethan@controllusion.com` | `User@1234` | Additional seeded active user |
-| User | `olivia@controllusion.com` | `User@1234` | Seeded as inactive, cannot sign in |
-
-When an admin invites a user from the admin panel, the mock API creates the account with a temporary password of `Welcome@123`.
-
-## Quick Start
-
-### Requirements
-
-- Node.js 18+ recommended
-- npm
-
-### Install and Run
-
-```bash
-npm install
-npm run dev
+```text
+crm/
+  frontend/
+  backend/
 ```
 
-Open the local Vite URL shown in the terminal, usually `http://localhost:5173`.
+### Frontend
 
-### Production Build
-
-```bash
-npm run build
-npm run preview
+```text
+frontend/
+  public/
+  src/
+    components/
+    context/
+    hooks/
+    layouts/
+    pages/
+    routes/
+    services/
+    utils/
+  package.json
+  vite.config.js
+  vercel.json
 ```
 
-If PowerShell blocks `npm`, use `npm.cmd install`, `npm.cmd run dev`, and `npm.cmd run build`.
+### Backend
 
-## Available Scripts
-
-| Command | Purpose |
-| --- | --- |
-| `npm run dev` | Start the Vite development server |
-| `npm run build` | Create the production build in `dist/` |
-| `npm run preview` | Serve the production build locally |
-
-## Product Walkthrough
-
-### Public Routes
-
-- `/` renders the landing page with product framing and dashboard preview
-- `/login` signs in an existing user
-- `/register` creates a new user account and immediately starts a session
-
-### Protected Routes
-
-- `/dashboard` shows the main dashboard shell, KPI cards, chart, and deals table
-- `/customers` lists CRM records with search, filters, sorting, pagination, and bulk selection state
-- `/customers/create` opens the reusable customer form for record creation
-- `/customers/:id` shows customer overview, timeline, deals, and notes
-- `/customers/:id/edit` edits an existing customer using the same form component
-- `/profile` updates account details and password
-
-### Admin Route
-
-- `/admin` is visible only to users with the `Admin` role
-- Non-admin authenticated users receive an access-denied UI instead of the admin screen
-
-### Fallback Route
-
-- `*` renders the not-found page
-
-## Main User Flows
-
-### Authentication
-
-- Session state is restored from `localStorage` on app boot
-- Protected routes redirect unauthenticated users to `/login`
-- Guest routes redirect authenticated users to `/dashboard`
-- Disabled accounts are blocked at the mock API layer
-
-### Customer Management
-
-- Customers can be created, edited, viewed, and deleted
-- List filtering supports text search, status filtering, stage filtering, and sorting
-- Customer forms validate required fields before submission
-- Updating a customer prepends a timeline event and can append note entries
-
-### Profile Management
-
-- Users can update name, email, phone, and job title
-- Users can change password with current-password validation
-
-### Admin Management
-
-- Admins can list all users
-- Admins can change user roles
-- Admins can enable or disable user access
-- Admins can invite new users directly from the UI
-
-## Seeded Data
-
-On first run, the app initializes a local mock database with:
-
-- 4 users
-- 10 customers
-- 3 tasks
-- 3 notifications
-
-The seeded customer records include:
-
-- Contact and company metadata
-- CRM status and pipeline stage
-- Deal value and deal objects
-- Timeline activity
-- Note history
-- Ownership metadata
-- Location and industry fields
+```text
+backend/
+  pom.xml
+  src/main/java/com/controllusion/backend/
+    config/
+    controller/
+    dto/
+    entity/
+    exception/
+    mapper/
+    repository/
+    security/
+    service/
+  src/main/java/db/migration/
+    V2__seed_demo_data.java
+  src/main/resources/
+    application.yml
+    db/migration/
+      V1__create_schema.sql
+```
 
 ## Tech Stack
 
-| Area | Tools |
+| Layer | Stack |
 | --- | --- |
-| Build tool | Vite |
-| UI library | React 18 |
-| Routing | React Router 6 |
-| Styling | Tailwind CSS |
-| HTTP layer | Axios |
-| Charts | Recharts |
-| Icons | Lucide React |
-| State | React Context + custom hooks |
-| Persistence | Browser `localStorage` |
+| Frontend | React 18, Vite, React Router DOM, Tailwind CSS, Axios, Recharts |
+| Backend | Java 21, Spring Boot 4, Spring Web, Spring Data JPA, Spring Security, JWT |
+| Database | PostgreSQL |
+| Migrations | Flyway |
+| API Docs | springdoc-openapi / Swagger UI |
+| Deployment | Vercel frontend, Render backend |
 
-## Architecture Overview
+## Product Routes
 
-The application is split into clear layers:
+### Public
 
-```text
-src/
-  components/
-    common/      shared data-display components
-    forms/       reusable form building blocks
-    layout/      sidebar and topbar shell components
-    ui/          low-level UI primitives
-  context/       auth and UI providers
-  hooks/         reusable stateful logic
-  layouts/       protected app shell
-  pages/         route-level screens
-  routes/        route definitions and guards
-  services/      mock API client and feature services
-  utils/         constants, seed data, formatters, validation
+- `/`
+- `/login`
+- `/register`
+
+### Protected
+
+- `/dashboard`
+- `/customers`
+- `/customers/create`
+- `/customers/:id`
+- `/customers/:id/edit`
+- `/profile`
+
+### Admin Only
+
+- `/admin`
+
+### Fallback
+
+- `*`
+
+## API Endpoints
+
+All backend routes are served under `/api`.
+
+### Auth
+
+- `POST /api/auth/login`
+- `POST /api/auth/register`
+- `GET /api/auth/me`
+- `PATCH /api/auth/profile`
+- `POST /api/auth/change-password`
+- `POST /api/auth/logout`
+
+### Dashboard
+
+- `GET /api/dashboard/summary`
+
+### Customers
+
+- `GET /api/customers`
+- `GET /api/customers/{id}`
+- `POST /api/customers`
+- `PATCH /api/customers/{id}`
+- `DELETE /api/customers/{id}`
+
+### Admin Users
+
+- `GET /api/users`
+- `POST /api/users/invite`
+- `PATCH /api/users/{id}`
+
+## Demo Accounts
+
+Seeded by Flyway on first backend startup:
+
+| Role | Email | Password |
+| --- | --- | --- |
+| Admin | `admin@controllusion.com` | `Admin@123` |
+| User | `sara@controllusion.com` | `User@1234` |
+
+Users invited from the admin panel receive the temporary password from `INVITE_TEMP_PASSWORD`, which defaults to `Welcome@123`.
+
+## Local Development
+
+### Requirements
+
+- Node.js 18+
+- npm
+- Java 21
+- Maven
+- PostgreSQL
+
+### 1. Create the Database
+
+Create a PostgreSQL database, for example:
+
+```sql
+CREATE DATABASE controllusion;
 ```
 
-### Context Providers
+### 2. Run the Backend
 
-- `AuthContext` manages session restore, login, registration, logout, profile updates, and password changes
-- `UIContext` manages sidebar state, theme preference persistence, and toast notifications
+From the repo root:
 
-### Service Layer
+```bash
+cd backend
+mvn spring-boot:run
+```
 
-- `apiClient.js` configures Axios with a `/api` base URL
-- `mockServer.js` attaches a custom Axios adapter to simulate backend endpoints and latency
-- `authService.js`, `customerService.js`, `dashboardService.js`, and `adminService.js` wrap feature-specific requests
+Default backend URL:
 
-### Hooks
+```text
+http://localhost:8080
+```
 
-- `useAuth` exposes the authentication context
-- `useCustomers` centralizes customer fetching and local list mutation
-- `useDebounce` supports responsive search
-- `useModal` manages dialog visibility
-- `useLocalStorage` supports browser persistence where needed
+Swagger UI:
 
-## Mock API Contract
+```text
+http://localhost:8080/swagger-ui.html
+```
 
-All requests stay in the browser through the Axios mock adapter.
+### 3. Run the Frontend
 
-### Auth Endpoints
+From the repo root:
 
-| Method | Path | Purpose |
+```bash
+cd frontend
+npm install
+```
+
+Create `.env` from `.env.example`:
+
+```bash
+VITE_API_BASE_URL=http://localhost:8080/api
+VITE_API_PROXY_TARGET=http://localhost:8080
+```
+
+Then run:
+
+```bash
+npm run dev
+```
+
+Default frontend URL:
+
+```text
+http://localhost:5173
+```
+
+## Environment Variables
+
+### Frontend
+
+| Variable | Purpose | Example |
 | --- | --- | --- |
-| `POST` | `/auth/login` | Sign in |
-| `POST` | `/auth/register` | Create account |
-| `GET` | `/auth/me` | Restore current user |
-| `PATCH` | `/auth/profile` | Update profile |
-| `POST` | `/auth/change-password` | Update password |
-| `POST` | `/auth/logout` | End session |
+| `VITE_API_BASE_URL` | Base URL for frontend API requests | `http://localhost:8080/api` |
+| `VITE_API_PROXY_TARGET` | Local dev proxy target | `http://localhost:8080` |
 
-### Dashboard Endpoint
+### Backend
 
-| Method | Path | Purpose |
+| Variable | Purpose | Example |
 | --- | --- | --- |
-| `GET` | `/dashboard/summary` | Load summary data for the dashboard |
+| `PORT` | Backend server port | `8080` |
+| `JDBC_DATABASE_URL` or `DB_URL` | PostgreSQL JDBC URL | `jdbc:postgresql://localhost:5432/controllusion` |
+| `JDBC_DATABASE_USERNAME` or `DB_USERNAME` | Database username | `postgres` |
+| `JDBC_DATABASE_PASSWORD` or `DB_PASSWORD` | Database password | `postgres` |
+| `JWT_SECRET` | JWT signing secret | `your-long-random-secret` |
+| `JWT_EXPIRATION_MINUTES` | Token lifetime | `1440` |
+| `APP_CORS_ALLOWED_ORIGINS` | Allowed frontend origins | `http://localhost:5173,https://your-app.vercel.app` |
+| `INVITE_TEMP_PASSWORD` | Temporary password for invited users | `Welcome@123` |
+| `DB_MAX_POOL_SIZE` | Hikari pool size | `10` |
 
-### Customer Endpoints
+## Database Schema
 
-| Method | Path | Purpose |
-| --- | --- | --- |
-| `GET` | `/customers` | List customers |
-| `POST` | `/customers` | Create customer |
-| `GET` | `/customers/:id` | Read customer detail |
-| `PATCH` | `/customers/:id` | Update customer |
-| `DELETE` | `/customers/:id` | Delete customer |
+### `users`
 
-### Admin Endpoints
+- `id`
+- `full_name`
+- `email`
+- `password_hash`
+- `role`
+- `active`
+- `title`
+- `phone`
+- `theme_preference`
+- `created_at`
+- `updated_at`
 
-| Method | Path | Purpose |
-| --- | --- | --- |
-| `GET` | `/users` | List users |
-| `POST` | `/users/invite` | Invite a user |
-| `PATCH` | `/users/:id` | Update role or active state |
+### `customers`
 
-## Validation Rules
+- `id`
+- `owner_id`
+- `full_name`
+- `email`
+- `phone`
+- `company`
+- `job_title`
+- `status`
+- `stage`
+- `deal_value`
+- `notes`
+- `location`
+- `industry`
+- `last_contacted_at`
+- `created_at`
+- `updated_at`
 
-### Login
+## Migrations and Seed Data
 
-- Email is required and must be valid
-- Password is required
+### Flyway Migrations
 
-### Registration
+- `V1__create_schema.sql`
+  Creates the database schema.
+- `V2__seed_demo_data.java`
+  Seeds admin/user accounts and realistic customer records with BCrypt-hashed passwords.
 
-- Full name is required
-- Email is required and must be valid
-- Password must be at least 8 characters
-- Password confirmation must match
+### Seeded Customers
 
-### Customer Form
+The backend seeds demo-ready customer records across multiple pipeline states such as:
 
-- Full name is required
-- Email is required and must be valid
-- Phone is required
-- Company is required
-- Status is required
-- Stage is required
-- Deal value must be numeric and non-negative
+- `Lead`
+- `Qualified`
+- `Proposal`
+- `Negotiation`
+- `Won`
+- `Lost`
 
-### Password Change
+This makes the dashboard, list, filters, and detail pages usable immediately after first startup.
 
-- Current password is required
-- New password must be at least 8 characters
-- Confirmation must match the new password
+## Authentication and Security
 
-## Local Persistence
+- Passwords are hashed with BCrypt
+- JWT bearer tokens are returned on login and register
+- The frontend stores the token in browser session data and sends it in the `Authorization` header
+- `/api/users/**` is admin-only
+- All non-public CRM endpoints require authentication
+- CORS is configurable for localhost and deployed frontend origins
 
-The app stores everything in the browser:
+## Frontend Notes
 
-| Key | Purpose |
-| --- | --- |
-| `controllusion_db_v1` | Mock database with users, customers, tasks, and notifications |
-| `controllusion_session_v1` | Active session token and user ID |
-| `controllusion_preferences_v1` | UI preferences such as theme |
+- Axios is configured with an env-based base URL
+- React Router handles protected and role-based routes
+- Customer list supports client-side search, filter, sort, and pagination on top of backend data
+- UI includes reusable cards, buttons, table, modal, loading, empty, and error components
 
-### Resetting the App
+## Deployment
 
-To restore the original seeded state:
+### Frontend -> Vercel
 
-1. Open your browser devtools.
-2. Clear the three `controllusion_*` keys from `localStorage`.
-3. Refresh the page.
+- Project root: `frontend`
+- Build command: `npm run build`
+- Output directory: `dist`
+- Set:
+  - `VITE_API_BASE_URL=https://your-render-backend.onrender.com/api`
+- `frontend/vercel.json` already contains SPA rewrites
 
-## Styling Notes
+### Backend -> Render
 
-- The UI follows a bright blue-and-white admin dashboard direction
-- Shared card, table, form, and shell patterns are reused across routes
-- The app is responsive and adapts the customer table into mobile cards on smaller screens
+- Project root: `backend`
+- Build command:
 
-## Deployment Notes
+```bash
+mvn clean package -DskipTests
+```
 
-This project is a static SPA and can be deployed to:
+- Start command:
 
-- Vercel
-- Netlify
-- GitHub Pages
-- Any static host with SPA route fallback support
+```bash
+java -jar target/backend-1.0.0.jar
+```
 
-### Important Deployment Requirement
+- Provision PostgreSQL in Render
+- Set backend environment variables for DB, JWT, and CORS
+- Add the Vercel frontend URL to `APP_CORS_ALLOWED_ORIGINS`
 
-Because the app uses client-side routing, unknown paths must rewrite to `index.html`.
+## College Rubric Alignment
 
-### Data Persistence in Production
+This project now clearly covers:
 
-There is still no server in production. Data remains per-browser because the mock backend is implemented with `localStorage`.
+- React SPA with multiple pages
+- React Router with dynamic and protected routes
+- authentication logic
+- API integration
+- create/edit/delete customer functionality
+- forms and validation
+- loading, empty, and error states
+- profile management
+- admin panel
+- production-ready monorepo structure
+- public deployment path via Vercel + Render
 
-## Limitations
+## Notes
 
-- There is no real backend or multi-user synchronization
-- Data is isolated to the current browser profile
-- Sessions are mock tokens only
-- Invited users and record changes do not exist outside local browser storage
-- Theme persistence exists, but the current UI normalizes the theme to light mode
-
-## Troubleshooting
-
-### The app looks empty after changes
-
-Clear the `controllusion_*` keys in `localStorage` and reload to restore seed data.
-
-### I cannot access the admin panel
-
-Sign in with the admin demo account or promote a user from the seeded admin session.
-
-### A seeded account cannot log in
-
-`olivia@controllusion.com` is intentionally inactive and should be rejected by the mock API.
-
-## Repository Notes
-
-- This repo is intended to be easy to demo locally
-- The mock API design keeps the UI architecture close to a real production React app
-- Replacing the mock server with a real backend can be done incrementally by preserving the service layer shape
+- `screenshots/` is not part of the application runtime
+- The backend is the source of truth for users and customers
+- The old mock `localStorage`-only architecture has been replaced by a real API-backed structure for core CRM data
