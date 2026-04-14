@@ -69,7 +69,9 @@ function RegisterPage() {
       </div>
       <div className="relative w-full max-w-[460px] rounded-[30px] bg-white px-10 py-12 shadow-[0_30px_90px_-45px_rgba(17,24,39,0.55)]">
         <p className="text-center text-2xl font-black tracking-[-0.03em] text-[#20253a]">Create an Account</p>
-        <p className="mt-3 text-center text-sm font-semibold text-[#8b93a8]">Set up your account to enter the dashboard</p>
+        <p className="mt-3 text-center text-sm font-semibold text-[#8b93a8]">
+          Set up your account to enter the dashboard. New workspaces start empty so you can add your own customers and profile details.
+        </p>
 
         <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
           <label className="block">

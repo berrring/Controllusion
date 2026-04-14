@@ -148,6 +148,11 @@ function Topbar() {
     };
   }, []);
 
+  useEffect(() => {
+    setNotifications(getUnreadNotifications());
+    setActivityEntries(getActivityLog());
+  }, [user?.id]);
+
   async function handleLogout() {
     addActivityEntry({
       title: 'Signed out',
@@ -303,7 +308,7 @@ function Topbar() {
 
           <div className="relative" ref={menuRef}>
             <button className="flex items-center gap-3 rounded-full border border-transparent bg-white px-2.5 py-1.5 sm:px-3.5 sm:py-2" onClick={() => setMenuOpen((value) => !value)} type="button">
-              <Avatar name={user?.fullName} size="sm" />
+              <Avatar name={user?.fullName} size="sm" src={user?.avatarUrl} />
               <div className="hidden text-left sm:block">
                 <p className="text-sm font-extrabold text-[#20253a]">{profileName}</p>
                 <p className="text-xs font-semibold text-[#8b93a8]">{profileRole}</p>

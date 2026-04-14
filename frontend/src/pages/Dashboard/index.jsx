@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Activity, CircleDollarSign, ListTodo, RefreshCw, Target, Users } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Area,
   AreaChart,
@@ -38,6 +38,7 @@ function getTaskStatusVariant(status) {
 }
 
 function DashboardPage() {
+  const navigate = useNavigate();
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -113,11 +114,11 @@ function DashboardPage() {
 
       <Card className="overflow-hidden p-0">
         <div className="flex items-center justify-between border-b border-[color:var(--border)] px-6 py-5">
-          <div>
-            <h2 className="text-[18px] font-black text-[var(--text)] sm:text-[20px]">Revenue trend</h2>
-            <p className="mt-1 text-sm text-muted">Backend-powered summary of recent revenue and active deals.</p>
+            <div>
+              <h2 className="text-[18px] font-black text-[var(--text)] sm:text-[20px]">Revenue trend</h2>
+              <p className="mt-1 text-sm text-muted">Track revenue growth as you add and update customers in your CRM workspace.</p>
+            </div>
           </div>
-        </div>
 
         <div className="h-[390px] px-4 py-6 sm:px-6">
           {revenueSeries.length ? (
@@ -162,7 +163,9 @@ function DashboardPage() {
           ) : (
             <div className="flex h-full items-center justify-center">
               <EmptyState
-                description="Revenue analytics will appear here once the backend returns summary data."
+                actionLabel="Add first customer"
+                description="New accounts start with an empty pipeline. Create your first customer and deal value to unlock dashboard analytics."
+                onAction={() => navigate('/customers/create')}
                 title="No revenue data yet"
               />
             </div>
@@ -175,7 +178,7 @@ function DashboardPage() {
           <div className="flex items-center justify-between gap-4">
             <div>
               <h2 className="text-xl font-semibold text-[var(--text)]">Recent activity</h2>
-              <p className="mt-1 text-sm text-muted">Latest customer-facing events returned by the dashboard API.</p>
+              <p className="mt-1 text-sm text-muted">Recent CRM changes appear here after you create or edit customer records.</p>
             </div>
           </div>
 
@@ -199,7 +202,9 @@ function DashboardPage() {
               ))
             ) : (
               <EmptyState
-                description="Customer events will appear here after the backend starts returning recent activity."
+                actionLabel="Create customer"
+                description="Your activity feed is still empty. Add a customer or update a record to start building a visible history."
+                onAction={() => navigate('/customers/create')}
                 title="No recent activity"
               />
             )}
@@ -213,7 +218,7 @@ function DashboardPage() {
             </div>
             <div>
               <h2 className="text-xl font-semibold text-[var(--text)]">Open tasks</h2>
-              <p className="mt-1 text-sm text-muted">Follow-up work returned by the backend summary endpoint.</p>
+              <p className="mt-1 text-sm text-muted">Suggested follow-ups appear here as your pipeline becomes active.</p>
             </div>
           </div>
 
@@ -236,7 +241,9 @@ function DashboardPage() {
               ))
             ) : (
               <EmptyState
-                description="Task reminders will appear here when the backend includes them in the dashboard summary."
+                actionLabel="Build pipeline"
+                description="There are no follow-up tasks yet. Once you add customers and move them past lead stage, reminders will appear here."
+                onAction={() => navigate('/customers/create')}
                 title="No open tasks"
               />
             )}

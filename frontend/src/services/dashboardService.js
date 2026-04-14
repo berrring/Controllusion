@@ -1,4 +1,5 @@
 import { apiClient } from './apiClient';
+import { mockApi, shouldUseMockApi } from './mockApi';
 import { normalizeListResponse, pickFirstDefined, unwrapApiData } from './normalizers';
 
 function normalizeRevenueSeries(data = []) {
@@ -24,6 +25,10 @@ function normalizeDashboardSummary(data) {
 }
 
 export async function getDashboardSummary() {
+  if (shouldUseMockApi()) {
+    return mockApi.dashboard.getDashboardSummary();
+  }
+
   const { data } = await apiClient.get('/dashboard/summary');
   return normalizeDashboardSummary(data);
 }

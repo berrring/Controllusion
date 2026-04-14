@@ -88,6 +88,7 @@ function CustomersPage() {
   const pageCount = Math.max(1, Math.ceil(filteredCustomers.length / PAGE_SIZE));
   const safePage = Math.min(currentPage, pageCount);
   const paginatedCustomers = filteredCustomers.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+  const noCustomersYet = customers.length === 0;
 
   function toggleRow(id) {
     setSelectedIds((current) => (current.includes(id) ? current.filter((item) => item !== id) : [...current, id]));
@@ -302,8 +303,12 @@ function CustomersPage() {
         <DataTable
           columns={columns}
           data={paginatedCustomers}
-          emptyDescription="Try a broader search or create a new customer to populate the table."
-          emptyTitle="No customers match your filters"
+          emptyDescription={
+            noCustomersYet
+              ? 'This account starts with an empty customer list. Add your first customer to begin building the CRM.'
+              : 'Try a broader search or adjust the filters to find an existing customer.'
+          }
+          emptyTitle={noCustomersYet ? 'No customers yet' : 'No customers match your filters'}
           onToggleAll={toggleAll}
           onToggleRow={toggleRow}
           renderMobileCard={(customer) => (

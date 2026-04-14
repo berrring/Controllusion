@@ -15,6 +15,12 @@ function safeParse(value, fallback) {
   }
 }
 
+function getScopedStorageKey(baseKey) {
+  const session = getSession();
+  const scope = session?.userId || 'guest';
+  return `${baseKey}:${scope}`;
+}
+
 function generateId(prefix) {
   return `${prefix}_${Math.random().toString(36).slice(2, 10)}`;
 }
@@ -50,7 +56,7 @@ function getDefaultNotifications() {
 }
 
 function getStoredNotifications() {
-  const notifications = safeParse(localStorage.getItem(NOTIFICATIONS_KEY), null);
+  const notifications = safeParse(localStorage.getItem(getScopedStorageKey(NOTIFICATIONS_KEY)), null);
 
   if (!Array.isArray(notifications) || !notifications.length) {
     return getDefaultNotifications();
@@ -60,7 +66,10 @@ function getStoredNotifications() {
 }
 
 function saveNotifications(notifications) {
-  localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(notifications.map(normalizeNotification)));
+  localStorage.setItem(
+    getScopedStorageKey(NOTIFICATIONS_KEY),
+    JSON.stringify(notifications.map(normalizeNotification)),
+  );
   dispatchStorageEvent(NOTIFICATIONS_UPDATED_EVENT);
 }
 
@@ -78,13 +87,13 @@ export function clearSession() {
 }
 
 export function getPreferences() {
-  return safeParse(localStorage.getItem(PREFERENCES_KEY), {
+  return safeParse(localStorage.getItem(getScopedStorageKey(PREFERENCES_KEY)), {
     theme: 'light',
   });
 }
 
 export function savePreferences(preferences) {
-  localStorage.setItem(PREFERENCES_KEY, JSON.stringify(preferences));
+  localStorage.setItem(getScopedStorageKey(PREFERENCES_KEY), JSON.stringify(preferences));
   return preferences;
 }
 
@@ -129,11 +138,11 @@ export function markAllNotificationsRead() {
 }
 
 export function getActivityLog() {
-  return safeParse(localStorage.getItem(ACTIVITY_KEY), []);
+  return safeParse(localStorage.getItem(getScopedStorageKey(ACTIVITY_KEY)), []);
 }
 
 export function saveActivityLog(entries) {
-  localStorage.setItem(ACTIVITY_KEY, JSON.stringify(entries));
+  localStorage.setItem(getScopedStorageKey(ACTIVITY_KEY), JSON.stringify(entries));
   dispatchStorageEvent(ACTIVITY_UPDATED_EVENT);
   return entries;
 }
