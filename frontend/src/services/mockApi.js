@@ -479,6 +479,30 @@ async function register(payload) {
   });
 }
 
+async function requestPasswordReset(email) {
+  const normalizedEmail = normalizeEmail(email || '');
+  if (!normalizedEmail) {
+    throw createApiError('Enter your email address first.', 400);
+  }
+
+  const database = getDatabase();
+  const user = database.users.find((item) => item.email === normalizedEmail);
+
+  if (!user) {
+    throw createApiError('No account exists with this email.', 404);
+  }
+
+  user.password = TEMP_PASSWORD;
+  user.updatedAt = new Date().toISOString();
+  saveDatabase(database);
+
+  return wait({
+    success: true,
+    message: `Password reset complete. Use temporary password: ${TEMP_PASSWORD}`,
+    temporaryPassword: TEMP_PASSWORD,
+  });
+}
+
 async function getProfile() {
   const database = getDatabase();
   const user = getUserBySession(database);
@@ -808,6 +832,7 @@ export const mockApi = {
     login,
     register,
     logout,
+    requestPasswordReset,
     getCurrentUser: getProfile,
   },
   profile: {

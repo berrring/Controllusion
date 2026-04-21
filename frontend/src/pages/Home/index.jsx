@@ -14,8 +14,10 @@ import {
   Users,
   Workflow,
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useContext } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { UIContext } from '../../context/UIContext';
 
 const desktopFeatures = [
   {
@@ -133,7 +135,7 @@ function AnalyticsChart() {
   );
 }
 
-function MobileHome({ isAuthenticated, heroAction, secondaryAction }) {
+function MobileHome({ isAuthenticated, heroAction, secondaryAction, onOpenHub, onShowUpdates }) {
   const mobileNavItems = [
     {
       label: 'Home',
@@ -159,11 +161,11 @@ function MobileHome({ isAuthenticated, heroAction, secondaryAction }) {
 
       <header className="fixed inset-x-0 top-0 z-30 border-b border-[rgba(229,234,246,0.96)] bg-[rgba(255,255,255,0.96)] backdrop-blur">
         <div className="mx-auto flex h-16 max-w-[560px] items-center justify-between px-4">
-          <button className="flex h-10 w-10 items-center justify-center rounded-[14px] bg-[#eef2ff] text-[#4c42e8]" type="button">
+          <button className="flex h-10 w-10 items-center justify-center rounded-[14px] bg-[#eef2ff] text-[#4c42e8]" onClick={onOpenHub} type="button">
             <Grid2x2 className="h-4 w-4" />
           </button>
           <p className="text-sm font-black tracking-[-0.03em] text-[#1f2a44]">Controllusion</p>
-          <button className="flex h-10 w-10 items-center justify-center rounded-[14px] bg-[#eef2ff] text-[#4c42e8]" type="button">
+          <button className="flex h-10 w-10 items-center justify-center rounded-[14px] bg-[#eef2ff] text-[#4c42e8]" onClick={onShowUpdates} type="button">
             <Bell className="h-4 w-4" />
           </button>
         </div>
@@ -459,6 +461,8 @@ function DesktopHome({ currentYear, isAuthenticated, heroAction, primaryAction, 
 }
 
 function HomePage() {
+  const navigate = useNavigate();
+  const { showToast } = useContext(UIContext);
   const { isAuthenticated } = useAuth();
   const currentYear = new Date().getFullYear();
   const primaryAction = isAuthenticated
@@ -471,9 +475,30 @@ function HomePage() {
     ? { label: 'Customers', to: '/customers' }
     : { label: 'Log In', to: '/login' };
 
+  function openHub() {
+    navigate(isAuthenticated ? '/dashboard' : '/login');
+  }
+
+  function showUpdates() {
+    showToast({
+      title: 'Product updates',
+      description: 'Scrolling to the key feature highlights.',
+      type: 'info',
+    });
+    window.setTimeout(() => {
+      document.getElementById('mobile-features')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 60);
+  }
+
   return (
     <>
-      <MobileHome heroAction={heroAction} isAuthenticated={isAuthenticated} secondaryAction={secondaryAction} />
+      <MobileHome
+        heroAction={heroAction}
+        isAuthenticated={isAuthenticated}
+        onOpenHub={openHub}
+        onShowUpdates={showUpdates}
+        secondaryAction={secondaryAction}
+      />
       <DesktopHome
         currentYear={currentYear}
         heroAction={heroAction}

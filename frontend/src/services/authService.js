@@ -49,3 +49,14 @@ export async function logout() {
   const { data } = await apiClient.post('/auth/logout');
   return data;
 }
+
+export async function requestPasswordReset(email) {
+  if (shouldUseMockApi()) {
+    return mockApi.auth.requestPasswordReset(email);
+  }
+
+  return {
+    success: true,
+    message: 'Password reset is available in mock mode only.',
+  };
+}

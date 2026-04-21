@@ -52,6 +52,24 @@ function ProfilePage() {
     });
   }, [user]);
 
+  function resetProfileForm() {
+    setProfileValues({
+      fullName: user?.fullName || '',
+      email: user?.email || '',
+      phone: user?.phone || '',
+      title: user?.title || '',
+      themePreference: user?.themePreference || 'light',
+      avatarUrl: user?.avatarUrl || null,
+    });
+    setProfileErrors({});
+    setProfileError('');
+    showToast({
+      title: 'Changes discarded',
+      description: 'Profile fields were reset to the last saved version.',
+      type: 'info',
+    });
+  }
+
   function handleProfileChange(event) {
     const { name, value } = event.target;
     setProfileValues((current) => ({ ...current, [name]: value }));
@@ -261,7 +279,7 @@ function ProfilePage() {
         {profileError ? <div className="rounded-[16px] bg-[#fff1ee] px-4 py-3 text-sm text-[#ec6a60]">{profileError}</div> : null}
 
         <div className="flex justify-end gap-3">
-          <Button type="button" variant="ghost">
+          <Button onClick={resetProfileForm} type="button" variant="ghost">
             Cancel
           </Button>
           <Button isLoading={profileSubmitting} type="submit">

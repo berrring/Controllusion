@@ -2,6 +2,7 @@ import { useContext, useState } from 'react';
 import { ArrowRight, Eye, EyeOff, Grid2x2, LockKeyhole, Mail } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import * as authService from '../../services/authService';
 import { addActivityEntry, addNotification } from '../../services/storage';
 import { validateLogin } from '../../utils/validation';
 import { UIContext } from '../../context/UIContext';
@@ -26,6 +27,23 @@ function LoginPage() {
     setErrors((current) => ({ ...current, [name]: '' }));
   }
 
+  function completeLogin(currentUser) {
+    addActivityEntry({
+      title: 'Signed in',
+      description: `${currentUser.fullName} signed in to Controllusion.`,
+    });
+    addNotification({
+      title: 'Welcome back',
+      message: `Signed in as ${currentUser.fullName}.`,
+      path: '/dashboard',
+    });
+    showToast({
+      title: 'Welcome back',
+      description: 'Your CRM workspace is ready.',
+    });
+    navigate(redirectTo, { replace: true, state: { rememberMe } });
+  }
+
   async function handleSubmit(event) {
     event.preventDefault();
     const validationErrors = validateLogin(values);
@@ -40,22 +58,53 @@ function LoginPage() {
 
     try {
       const currentUser = await loginUser(values);
-      addActivityEntry({
-        title: 'Signed in',
-        description: `${currentUser.fullName} signed in to Controllusion.`,
-      });
-      addNotification({
-        title: 'Welcome back',
-        message: `Signed in as ${currentUser.fullName}.`,
-        path: '/dashboard',
-      });
-      showToast({
-        title: 'Welcome back',
-        description: 'Your CRM workspace is ready.',
-      });
-      navigate(redirectTo, { replace: true, state: { rememberMe } });
+      completeLogin(currentUser);
     } catch (error) {
       setSubmitError(error.response?.data?.message || 'Unable to sign in right now.');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleForgotPassword() {
+    try {
+      const response = await authService.requestPasswordReset(values.email);
+      setValues((current) => ({
+        ...current,
+        password: response.temporaryPassword || current.password,
+      }));
+      showToast({
+        title: 'Temporary password issued',
+        description: response.message,
+        type: 'info',
+      });
+    } catch (error) {
+      showToast({
+        title: 'Reset failed',
+        description: error.response?.data?.message || 'Unable to reset this password.',
+        type: 'error',
+      });
+    }
+  }
+
+  async function handleProviderLogin(provider) {
+    const credentials =
+      provider === 'google'
+        ? { email: 'sara@controllusion.com', password: 'User@1234' }
+        : { email: 'admin@controllusion.com', password: 'Admin@123' };
+
+    setSubmitting(true);
+    setSubmitError('');
+
+    try {
+      const currentUser = await loginUser(credentials);
+      showToast({
+        title: provider === 'google' ? 'Signed in with Google' : 'Signed in with Apple',
+        description: `Demo provider login opened ${currentUser.fullName}.`,
+      });
+      completeLogin(currentUser);
+    } catch (error) {
+      setSubmitError(error.response?.data?.message || 'Unable to use this provider.');
     } finally {
       setSubmitting(false);
     }
@@ -96,7 +145,7 @@ function LoginPage() {
           <label className="block">
             <div className="mb-2 flex items-center justify-between gap-3">
               <span className="text-sm font-semibold text-[#4f5d78]">Password</span>
-              <button className="text-xs font-semibold text-[#4c42e8]" type="button">
+              <button className="text-xs font-semibold text-[#4c42e8]" onClick={handleForgotPassword} type="button">
                 Forgot Password?
               </button>
             </div>
@@ -146,10 +195,18 @@ function LoginPage() {
         <div className="mt-7 border-t border-[#edf0fb] pt-6 sm:hidden">
           <p className="text-center text-[11px] font-bold uppercase tracking-[0.12em] text-[#a0aac0]">Or continue with</p>
           <div className="mt-4 grid grid-cols-2 gap-3">
-            <button className="h-11 rounded-[12px] border border-[#edf0fb] bg-white text-sm font-semibold text-[#1f2a44]" type="button">
+            <button
+              className="h-11 rounded-[12px] border border-[#edf0fb] bg-white text-sm font-semibold text-[#1f2a44]"
+              onClick={() => handleProviderLogin('google')}
+              type="button"
+            >
               Google
             </button>
-            <button className="h-11 rounded-[12px] border border-[#edf0fb] bg-white text-sm font-semibold text-[#1f2a44]" type="button">
+            <button
+              className="h-11 rounded-[12px] border border-[#edf0fb] bg-white text-sm font-semibold text-[#1f2a44]"
+              onClick={() => handleProviderLogin('apple')}
+              type="button"
+            >
               Apple
             </button>
           </div>

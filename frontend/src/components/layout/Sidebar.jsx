@@ -51,6 +51,19 @@ function SidebarContent({ onNavigate }) {
     navigate('/login');
   }
 
+  function openHelpCenter() {
+    onNavigate?.();
+    showToast({
+      title: 'Help Center',
+      description: 'Opening product overview and help resources.',
+      type: 'info',
+    });
+    navigate('/');
+    window.setTimeout(() => {
+      document.getElementById('features')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 120);
+  }
+
   return (
     <div className="flex h-full flex-col bg-[linear-gradient(180deg,#f5f7ff_0%,#eef2ff_100%)]">
       <div className="px-4 pb-5 pt-5">
@@ -72,6 +85,7 @@ function SidebarContent({ onNavigate }) {
       <div className="space-y-1 border-t border-[rgba(222,229,246,0.9)] px-4 py-5">
         <button
           className="flex w-full items-center gap-3 rounded-[10px] px-3 py-2.5 text-left text-[13px] font-medium text-[#8a95ad] transition hover:bg-[#f4f7ff] hover:text-[#1f2a44]"
+          onClick={openHelpCenter}
           type="button"
         >
           <CircleHelp className="h-4 w-4" />

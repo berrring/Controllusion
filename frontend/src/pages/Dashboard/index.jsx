@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import {
   CircleDollarSign,
   FilePlus2,
@@ -12,6 +12,8 @@ import {
 import { Link, useNavigate } from 'react-router-dom';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
 import { getDashboardSummary } from '../../services/dashboardService';
+import { UIContext } from '../../context/UIContext';
+import { addActivityEntry, addNotification } from '../../services/storage';
 import LoadingSkeleton from '../../components/common/LoadingSkeleton';
 import ErrorState from '../../components/common/ErrorState';
 import EmptyState from '../../components/common/EmptyState';
@@ -75,6 +77,7 @@ function DashboardMetricCard({ label, value, change, changeTone, icon: Icon }) {
 
 function DashboardPage() {
   const navigate = useNavigate();
+  const { showToast } = useContext(UIContext);
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -103,6 +106,31 @@ function DashboardPage() {
   useEffect(() => {
     void loadSummary();
   }, []);
+
+  function createInvoiceDraft() {
+    addActivityEntry({
+      title: 'Invoice draft created',
+      description: 'A new invoice draft was created from the dashboard quick action.',
+    });
+    addNotification({
+      title: 'Invoice draft ready',
+      message: 'The invoice draft was added to your workspace queue.',
+      path: '/dashboard',
+    });
+    showToast({
+      title: 'Invoice draft created',
+      description: 'The fake backend saved a draft invoice in the activity stream.',
+    });
+  }
+
+  async function inspectAnalytics() {
+    await loadSummary({ silent: true });
+    showToast({
+      title: 'Analytics refreshed',
+      description: 'The monthly growth panel was refreshed with the latest mock data.',
+      type: 'info',
+    });
+  }
 
   if (loading) {
     return (
@@ -138,7 +166,7 @@ function DashboardPage() {
               <RefreshCw className="h-4 w-4" />
               Refresh
             </Button>
-            <Button variant="subtle">
+            <Button onClick={createInvoiceDraft} variant="subtle">
               <FilePlus2 className="h-4 w-4" />
               Create Invoice
             </Button>
@@ -174,7 +202,7 @@ function DashboardPage() {
               <h2 className="text-[24px] font-black text-[#1f2a44]">Monthly Growth</h2>
               <p className="mt-1 text-sm text-[#7b86a0]">Track pipeline revenue across the last six months.</p>
             </div>
-            <button className="text-xl font-bold text-[#909ab0]" type="button">
+            <button className="text-xl font-bold text-[#909ab0]" onClick={inspectAnalytics} type="button">
               ...
             </button>
           </div>
