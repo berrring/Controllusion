@@ -1,86 +1,79 @@
 # Controllusion CRM
 
-Controllusion is a full-stack CRM application built as a monorepo with a React frontend and a Spring Boot backend. The project is focused on a clean college-final scope: authentication, dashboard metrics, customer management, profile editing, and admin user management.
+Controllusion is a monorepo CRM with a React frontend and a Python FastAPI backend.
 
-This repository is structured for real deployment:
-- `frontend` -> Vercel-ready React + Vite SPA
-- `backend` -> Render-ready Spring Boot + PostgreSQL API
+The project currently supports two runtime modes:
 
+- `frontend` default mode: fake backend in the browser via `localStorage`
+- `backend` optional mode: real FastAPI API with JWT auth and seeded SQLite/Postgres data
 
-## Core Features
+## Current Stack
 
-- JWT authentication with login, registration, session restore, and logout
-- Protected routes and role-based admin access
-- Dashboard with backend-powered summary metrics
-- Customer CRUD with search, filter, sort, and detail view
-- Profile update and password change
-- Admin user listing, invite/create flow, role updates, and enable/disable actions
-- Validation, loading states, empty states, and error states
-- Swagger UI for API testing
-- PostgreSQL persistence with Flyway migrations and seed data
+| Layer | Stack |
+| --- | --- |
+| Frontend | React 18, Vite, React Router, Tailwind CSS, Axios, Recharts |
+| Frontend mock data | `localStorage` fake DB in `frontend/src/services/mockApi.js` |
+| Backend | FastAPI, SQLAlchemy, PyJWT, Passlib |
+| Database | SQLite by default, PostgreSQL-compatible via `DATABASE_URL` |
+| Deployment | Vercel-friendly frontend, Docker-ready Python backend |
 
-## Monorepo Structure
+## Main Features
+
+- Design-driven CRM UI matched to the provided Figma/screenshots
+- Login, registration, logout, profile editing, password change
+- Dashboard metrics, activity feed, and quick actions
+- Customer CRUD with search, filtering, sorting, pagination, detail, and edit screens
+- Admin-only team management with invite flow, role changes, and enable/disable actions
+- Mock mode with persistent browser data and duplicate email protection
+- Real FastAPI API with the same frontend contract
+
+## Repo Structure
 
 ```text
 crm/
   frontend/
+    public/
+    src/
+    .env
+    package.json
+    vite.config.js
   backend/
+    app/
+    Dockerfile
+    main.py
+    requirements.txt
+  README.md
 ```
 
-### Frontend
+## Frontend Mock Mode
 
-```text
-frontend/
-  public/
-  src/
-    components/
-    context/
-    hooks/
-    layouts/
-    pages/
-    routes/
-    services/
-    utils/
-  package.json
-  vite.config.js
-  vercel.json
-```
+The frontend is configured to use the fake backend by default.
 
-### Backend
+- `frontend/.env` contains `VITE_USE_MOCK_API=true`
+- the fake DB key is `controllusion_mock_db_v1`
+- data survives page refresh because it is stored in `localStorage`
+- duplicate email registration is blocked in mock mode
+- duplicate email updates are also blocked for profile edits and admin invites
 
-```text
-backend/
-  pom.xml
-  src/main/java/com/controllusion/backend/
-    config/
-    controller/
-    dto/
-    entity/
-    exception/
-    mapper/
-    repository/
-    security/
-    service/
-  src/main/java/db/migration/
-    V2__seed_demo_data.java
-  src/main/resources/
-    application.yml
-    db/migration/
-      V1__create_schema.sql
-```
+The mock service lives in:
 
-## Tech Stack
+- `frontend/src/services/mockApi.js`
 
-| Layer | Stack |
-| --- | --- |
-| Frontend | React 18, Vite, React Router DOM, Tailwind CSS, Axios, Recharts |
-| Backend | Java 21, Spring Boot 4, Spring Web, Spring Data JPA, Spring Security, JWT |
-| Database | PostgreSQL |
-| Migrations | Flyway |
-| API Docs | springdoc-openapi / Swagger UI |
-| Deployment | Vercel frontend, Render backend |
+## Demo Accounts
 
-## Product Routes
+Available in both mock mode and seeded FastAPI mode:
+
+| Role | Email | Password |
+| --- | --- | --- |
+| Admin | `admin@controllusion.com` | `Admin@123` |
+| User | `sara@controllusion.com` | `User@1234` |
+| Showcase User | `showcase@controllusion.com` | `Showcase@123` |
+
+Temporary password used by mock reset/invite flows:
+
+- `Welcome@123`
+
+## Routes
 
 ### Public
 
@@ -97,17 +90,13 @@ backend/
 - `/customers/:id/edit`
 - `/profile`
 
-### Admin Only
+### Admin
 
 - `/admin`
 
-### Fallback
-
-- `*`
-
 ## API Endpoints
 
-All backend routes are served under `/api`.
+All real backend routes are served under `/api`.
 
 ### Auth
 
@@ -130,22 +119,11 @@ All backend routes are served under `/api`.
 - `PATCH /api/customers/{id}`
 - `DELETE /api/customers/{id}`
 
-### Admin Users
+### Users
 
 - `GET /api/users`
 - `POST /api/users/invite`
 - `PATCH /api/users/{id}`
-
-## Demo Accounts
-
-Seeded by Flyway on first backend startup:
-
-| Role | Email | Password |
-| --- | --- | --- |
-| Admin | `admin@controllusion.com` | `Admin@123` |
-| User | `sara@controllusion.com` | `User@1234` |
-
-Users invited from the admin panel receive the temporary password from `INVITE_TEMP_PASSWORD`, which defaults to `Welcome@123`.
 
 ## Local Development
 
@@ -153,211 +131,111 @@ Users invited from the admin panel receive the temporary password from `INVITE_T
 
 - Node.js 18+
 - npm
-- Java 21
-- Maven
-- PostgreSQL
+- Python 3.12+ recommended
 
-### 1. Create the Database
+## Run Frontend Only
 
-Create a PostgreSQL database, for example:
-
-```sql
-CREATE DATABASE controllusion;
-```
-
-### 2. Run the Backend
-
-From the repo root:
-
-```bash
-cd backend
-mvn spring-boot:run
-```
-
-Default backend URL:
-
-```text
-http://localhost:8080
-```
-
-Swagger UI:
-
-```text
-http://localhost:8080/swagger-ui.html
-```
-
-### 3. Run the Frontend
-
-From the repo root:
+This is the simplest mode and does not require the backend.
 
 ```bash
 cd frontend
 npm install
-```
-
-Create `.env` from `.env.example`:
-
-```bash
-VITE_API_BASE_URL=http://localhost:8080/api
-VITE_API_PROXY_TARGET=http://localhost:8080
-```
-
-Then run:
-
-```bash
 npm run dev
 ```
 
-Default frontend URL:
+Frontend URL:
 
 ```text
 http://localhost:5173
 ```
 
+## Run Full Stack
+
+### 1. Start the backend
+
+```bash
+cd backend
+pip install -r requirements.txt
+uvicorn main:app --reload --host 0.0.0.0 --port 8080
+```
+
+Backend URL:
+
+```text
+http://localhost:8080
+```
+
+Health check:
+
+```text
+http://localhost:8080/health
+```
+
+### 2. Switch frontend from mock mode to the real API
+
+Change `frontend/.env` to:
+
+```env
+VITE_USE_MOCK_API=false
+```
+
+Then run the frontend:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+If `VITE_API_BASE_URL` is not set, Vite proxies `/api` to `VITE_API_PROXY_TARGET` or `http://localhost:8080`.
+
 ## Environment Variables
 
 ### Frontend
 
-| Variable | Purpose | Example |
+| Variable | Purpose | Default |
 | --- | --- | --- |
-| `VITE_API_BASE_URL` | Base URL for frontend API requests | `http://localhost:8080/api` |
-| `VITE_API_PROXY_TARGET` | Local dev proxy target | `http://localhost:8080` |
+| `VITE_USE_MOCK_API` | Use browser fake backend instead of real API | `true` |
+| `VITE_API_BASE_URL` | Explicit API base URL for Axios | unset |
+| `VITE_API_PROXY_TARGET` | Dev proxy target when `VITE_API_BASE_URL` is unset | `http://localhost:8080` |
 
 ### Backend
 
-| Variable | Purpose | Example |
+| Variable | Purpose | Default |
 | --- | --- | --- |
-| `PORT` | Backend server port | `8080` |
-| `JDBC_DATABASE_URL` or `DB_URL` | PostgreSQL JDBC URL | `jdbc:postgresql://localhost:5432/controllusion` |
-| `JDBC_DATABASE_USERNAME` or `DB_USERNAME` | Database username | `postgres` |
-| `JDBC_DATABASE_PASSWORD` or `DB_PASSWORD` | Database password | `postgres` |
-| `JWT_SECRET` | JWT signing secret | `your-long-random-secret` |
-| `JWT_EXPIRATION_MINUTES` | Token lifetime | `1440` |
-| `APP_CORS_ALLOWED_ORIGINS` | Allowed frontend origins | `http://localhost:5173,https://your-app.vercel.app` |
-| `INVITE_TEMP_PASSWORD` | Temporary password for invited users | `Welcome@123` |
-| `DB_MAX_POOL_SIZE` | Hikari pool size | `10` |
+| `DATABASE_URL` | SQLAlchemy database URL | SQLite file in `backend/controllusion.db` |
+| `DB_URL` | Alias that overrides `DATABASE_URL` | unset |
+| `JWT_SECRET` | JWT signing secret | dev default in config |
+| `JWT_EXPIRATION_MINUTES` | Access token lifetime | `1440` |
+| `APP_CORS_ALLOWED_ORIGINS` | Allowed origins list | `http://localhost:5173,http://localhost:3000` |
+| `INVITE_TEMP_PASSWORD` | Temporary password for admin invite flow | `Welcome@123` |
 
-## Database Schema
+## Backend Notes
 
-### `users`
-
-- `id`
-- `full_name`
-- `email`
-- `password_hash`
-- `role`
-- `active`
-- `title`
-- `phone`
-- `theme_preference`
-- `created_at`
-- `updated_at`
-
-### `customers`
-
-- `id`
-- `owner_id`
-- `full_name`
-- `email`
-- `phone`
-- `company`
-- `job_title`
-- `status`
-- `stage`
-- `deal_value`
-- `notes`
-- `location`
-- `industry`
-- `last_contacted_at`
-- `created_at`
-- `updated_at`
-
-## Migrations and Seed Data
-
-### Flyway Migrations
-
-- `V1__create_schema.sql`
-  Creates the database schema.
-- `V2__seed_demo_data.java`
-  Seeds admin/user accounts and realistic customer records with BCrypt-hashed passwords.
-
-### Seeded Customers
-
-The backend seeds demo-ready customer records across multiple pipeline states such as:
-
-- `Lead`
-- `Qualified`
-- `Proposal`
-- `Negotiation`
-- `Won`
-- `Lost`
-
-This makes the dashboard, list, filters, and detail pages usable immediately after first startup.
-
-## Authentication and Security
-
-- Passwords are hashed with BCrypt
-- JWT bearer tokens are returned on login and register
-- The frontend stores the token in browser session data and sends it in the `Authorization` header
-- `/api/users/**` is admin-only
-- All non-public CRM endpoints require authentication
-- CORS is configurable for localhost and deployed frontend origins
+- The backend entrypoint is `backend/main.py`
+- FastAPI app is defined in `backend/app/main.py`
+- SQLAlchemy tables are created automatically on startup
+- Demo users and customers are seeded automatically on startup
+- SQLite is the default database, so local boot works without PostgreSQL
 
 ## Frontend Notes
 
-- Axios is configured with an env-based base URL
-- React Router handles protected and role-based routes
-- Customer list supports client-side search, filter, sort, and pagination on top of backend data
-- UI includes reusable cards, buttons, table, modal, loading, empty, and error components
+- Auth/session state is stored in browser storage
+- Notifications and activity feed are also persisted in browser storage in mock mode
+- Avatar upload on the profile page is stored as a data URL in mock mode
+- The frontend build passes with `npm run build`
 
-## Deployment
+## Docker
 
-### Frontend -> Vercel
-
-- Project root: `frontend`
-- Build command: `npm run build`
-- Output directory: `dist`
-- Set:
-  - `VITE_API_BASE_URL=https://your-render-backend.onrender.com/api`
-- `frontend/vercel.json` already contains SPA rewrites
-
-### Backend -> Render
-
-- Project root: `backend`
-- Build command:
+Backend container build:
 
 ```bash
-mvn clean package -DskipTests
+cd backend
+docker build -t controllusion-backend .
+docker run -p 8080:8080 controllusion-backend
 ```
 
-- Start command:
+## Removed Legacy Backend
 
-```bash
-java -jar target/backend-1.0.0.jar
-```
-
-- Provision PostgreSQL in Render
-- Set backend environment variables for DB, JWT, and CORS
-- Add the Vercel frontend URL to `APP_CORS_ALLOWED_ORIGINS`
-
-## College Rubric Alignment
-
-This project now clearly covers:
-
-- React SPA with multiple pages
-- React Router with dynamic and protected routes
-- authentication logic
-- API integration
-- create/edit/delete customer functionality
-- forms and validation
-- loading, empty, and error states
-- profile management
-- admin panel
-- production-ready monorepo structure
-- public deployment path via Vercel + Render
-
-## Notes
-
-- `screenshots/` is not part of the application runtime
-- The backend is the source of truth for users and customers
-- The old mock `localStorage`-only architecture has been replaced by a real API-backed structure for core CRM data
+The old Spring Boot / Java backend has been removed from the tracked repository.
+The active backend is now the Python FastAPI service under `backend/app`.

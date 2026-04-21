@@ -202,6 +202,20 @@ def ensure_unique_customer_email(db: Session, email: str, exclude_customer_id=No
         )
 
 
+def apply_customer_scope(query, current_user: User):
+    if current_user.role == UserRole.ADMIN.value:
+        return query
+    return query.filter(Customer.owner_id == current_user.id)
+
+
+def ensure_customer_access(customer: Customer, current_user: User):
+    if current_user.role == UserRole.ADMIN.value:
+        return customer
+    if customer.owner_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Customer not found.")
+    return customer
+
+
 @router.post("/auth/login", response_model=AuthResponse)
 def login(request: LoginRequest, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == normalize_email(request.email)).first()
@@ -302,9 +316,8 @@ def get_customers(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    del current_user
-
     query = db.query(Customer).options(selectinload(Customer.owner))
+    query = apply_customer_scope(query, current_user)
 
     if search and search.strip():
         pattern = f"%{search.strip().lower()}%"
@@ -340,8 +353,8 @@ def get_customers(
 
 @router.get("/customers/{customer_id}", response_model=CustomerResponse)
 def get_customer(customer_id: uuid.UUID, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    del current_user
-    return serialize_customer(get_customer_or_404(db, customer_id))
+    customer = ensure_customer_access(get_customer_or_404(db, customer_id), current_user)
+    return serialize_customer(customer)
 
 
 @router.post("/customers", response_model=CustomerResponse, status_code=status.HTTP_201_CREATED)
@@ -381,8 +394,7 @@ def update_customer(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    del current_user
-    customer = get_customer_or_404(db, customer_id)
+    customer = ensure_customer_access(get_customer_or_404(db, customer_id), current_user)
     ensure_unique_customer_email(db, request.email, exclude_customer_id=customer_id)
 
     customer.full_name = request.full_name.strip()
@@ -410,8 +422,7 @@ def delete_customer(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    del current_user
-    customer = get_customer_or_404(db, customer_id)
+    customer = ensure_customer_access(get_customer_or_404(db, customer_id), current_user)
     db.delete(customer)
     db.commit()
     return ApiMessageResponse(message="Customer deleted successfully.")
@@ -419,13 +430,10 @@ def delete_customer(
 
 @router.get("/dashboard/summary", response_model=DashboardSummaryResponse)
 def get_dashboard_summary(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    del current_user
-    customers = (
-        db.query(Customer)
-        .options(selectinload(Customer.owner))
-        .order_by(Customer.updated_at.desc())
-        .all()
-    )
+    customers = apply_customer_scope(
+        db.query(Customer).options(selectinload(Customer.owner)).order_by(Customer.updated_at.desc()),
+        current_user,
+    ).all()
 
     total_customers = len(customers)
     active_deals = sum(1 for customer in customers if customer.stage in ACTIVE_STAGES)
