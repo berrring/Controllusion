@@ -25,6 +25,7 @@ function ProfilePage() {
   });
   const [profileErrors, setProfileErrors] = useState({});
   const [profileSubmitting, setProfileSubmitting] = useState(false);
+  const [avatarSubmitting, setAvatarSubmitting] = useState(false);
   const [profileError, setProfileError] = useState('');
   const [notifications, setNotifications] = useState({
     newCustomers: true,
@@ -83,12 +84,45 @@ function ProfilePage() {
   }
 
   function openAvatarPicker() {
+    if (avatarSubmitting || profileSubmitting) {
+      return;
+    }
     avatarInputRef.current?.click();
   }
 
-  function removeAvatar() {
-    setProfileValues((current) => ({ ...current, avatarUrl: null }));
+  async function persistAvatar(nextAvatarUrl) {
+    const nextValues = {
+      ...profileValues,
+      avatarUrl: nextAvatarUrl,
+    };
+
+    setProfileValues(nextValues);
     setProfileError('');
+    setAvatarSubmitting(true);
+
+    try {
+      await saveProfile(nextValues);
+      showToast({
+        title: nextAvatarUrl ? 'Avatar updated' : 'Avatar removed',
+        description: nextAvatarUrl ? 'Your new avatar was saved immediately.' : 'Your avatar was removed.',
+      });
+    } catch (error) {
+      setProfileError(error.response?.data?.message || 'Unable to update avatar right now.');
+      setProfileValues((current) => ({
+        ...current,
+        avatarUrl: user?.avatarUrl || null,
+      }));
+    } finally {
+      setAvatarSubmitting(false);
+    }
+  }
+
+  function removeAvatar() {
+    if (!profileValues.avatarUrl && !user?.avatarUrl) {
+      return;
+    }
+
+    void persistAvatar(null);
   }
 
   function handleAvatarChange(event) {
@@ -106,11 +140,12 @@ function ProfilePage() {
 
     const reader = new FileReader();
     reader.onload = () => {
-      setProfileValues((current) => ({
-        ...current,
-        avatarUrl: typeof reader.result === 'string' ? reader.result : null,
-      }));
-      setProfileError('');
+      const nextAvatarUrl = typeof reader.result === 'string' ? reader.result : null;
+      if (!nextAvatarUrl) {
+        setProfileError('Unable to read the selected image.');
+        return;
+      }
+      void persistAvatar(nextAvatarUrl);
     };
     reader.readAsDataURL(file);
     event.target.value = '';
@@ -197,19 +232,47 @@ function ProfilePage() {
           <h2 className="text-[24px] font-black text-[#1f2a44]">Public Profile</h2>
 
           <div className="mt-6 grid gap-6 lg:grid-cols-[180px_1fr]">
-            <div className="flex flex-col items-start gap-3">
-              <Avatar name={profileValues.fullName || user?.fullName} size="xl" src={profileValues.avatarUrl || user?.avatarUrl} />
+            <div className="flex flex-col items-start gap-4">
+              <button
+                className="group relative overflow-hidden rounded-full focus:outline-none focus:ring-4 focus:ring-[#dfe6ff]"
+                disabled={avatarSubmitting || profileSubmitting}
+                onClick={openAvatarPicker}
+                type="button"
+              >
+                <Avatar
+                  name={profileValues.fullName || user?.fullName}
+                  size="xl"
+                  src={profileValues.avatarUrl || user?.avatarUrl}
+                />
+                <span className="absolute inset-0 flex items-center justify-center bg-slate-950/0 text-xs font-semibold text-white transition group-hover:bg-slate-950/28">
+                  Edit
+                </span>
+              </button>
               <input accept="image/*" className="hidden" onChange={handleAvatarChange} ref={avatarInputRef} type="file" />
-              <div className="flex gap-2">
-                <Button onClick={openAvatarPicker} type="button" variant="secondary">
+              <div className="flex w-full max-w-[260px] flex-col gap-2 sm:flex-row">
+                <Button
+                  className="min-w-[120px] justify-center"
+                  disabled={avatarSubmitting || profileSubmitting}
+                  isLoading={avatarSubmitting}
+                  onClick={openAvatarPicker}
+                  type="button"
+                  variant="secondary"
+                >
                   <ImagePlus className="h-4 w-4" />
                   Change
                 </Button>
-                <Button onClick={removeAvatar} type="button" variant="ghost">
+                <Button
+                  className="min-w-[120px] justify-center"
+                  disabled={avatarSubmitting || profileSubmitting || (!profileValues.avatarUrl && !user?.avatarUrl)}
+                  onClick={removeAvatar}
+                  type="button"
+                  variant="ghost"
+                >
                   <Trash2 className="h-4 w-4" />
                   Remove
                 </Button>
               </div>
+              <p className="text-xs leading-5 text-[#7b86a0]">Click the avatar or use Change. It saves immediately after image selection.</p>
             </div>
 
             <div className="space-y-5">
