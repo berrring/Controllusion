@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
-import { UserPlus } from 'lucide-react';
+import { SlidersHorizontal, UserPlus } from 'lucide-react';
 import * as adminService from '../../services/adminService';
 import { ROLE_OPTIONS } from '../../utils/constants';
 import { UIContext } from '../../context/UIContext';
@@ -16,7 +16,7 @@ import Modal from '../../components/ui/Modal';
 import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
 import FormField from '../../components/forms/FormField';
-import { formatDate } from '../../utils/formatters';
+import Avatar from '../../components/common/Avatar';
 
 function AdminPage() {
   const { showToast } = useContext(UIContext);
@@ -95,15 +95,6 @@ function AdminPage() {
     try {
       const updatedUser = await adminService.updateUser(user.id, { isActive: !user.isActive });
       setUsers((current) => current.map((item) => (item.id === updatedUser.id ? updatedUser : item)));
-      addActivityEntry({
-        title: updatedUser.isActive ? 'User enabled' : 'User disabled',
-        description: `${updatedUser.fullName} access was updated from the admin panel.`,
-      });
-      addNotification({
-        title: updatedUser.isActive ? 'User enabled' : 'User disabled',
-        message: `${updatedUser.fullName} access was updated successfully.`,
-        path: '/admin',
-      });
       showToast({
         title: updatedUser.isActive ? 'User enabled' : 'User disabled',
         description: `${updatedUser.fullName} access was updated.`,
@@ -132,15 +123,6 @@ function AdminPage() {
     try {
       const invitedUser = await adminService.inviteUser(inviteValues);
       setUsers((current) => [invitedUser, ...current]);
-      addActivityEntry({
-        title: 'User invited',
-        description: `${invitedUser.fullName} was invited to the CRM workspace.`,
-      });
-      addNotification({
-        title: 'User invited',
-        message: `${invitedUser.fullName} was added to the team.`,
-        path: '/admin',
-      });
       showToast({
         title: 'User invited',
         description: `${invitedUser.fullName} was added successfully.`,
@@ -167,49 +149,58 @@ function AdminPage() {
     <div className="space-y-6">
       <PageHeader
         actions={
-          <Button
-            onClick={() => {
-              setInviteError('');
-              setInviteFieldErrors({});
-              setInviteOpen(true);
-            }}
-          >
-            <UserPlus className="h-4 w-4" />
-            Invite user
-          </Button>
+          <>
+            <Button onClick={loadUsers} variant="secondary">
+              <SlidersHorizontal className="h-4 w-4" />
+              Manage Roles
+            </Button>
+            <Button
+              onClick={() => {
+                setInviteError('');
+                setInviteFieldErrors({});
+                setInviteOpen(true);
+              }}
+            >
+              <UserPlus className="h-4 w-4" />
+              Add User
+            </Button>
+          </>
         }
-        breadcrumbs={[{ label: 'Dashboard', to: '/dashboard' }, { label: 'Admin' }]}
-        description="Manage user access, roles, and account status for the Controllusion CRM."
-        title="Admin panel"
+        description="Manage users, assign roles, and control access permissions across the organization."
+        title="Team Directory"
       />
 
-      <Card>
+      <Card className="rounded-[18px]">
         {users.length ? (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-slate-200">
+            <table className="min-w-full">
               <thead>
-                <tr>
-                  {['User', 'Role', 'Status', 'Created', 'Actions'].map((label) => (
-                    <th className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-[0.14em] text-slate-500" key={label}>
+                <tr className="text-left text-[11px] font-bold uppercase tracking-[0.12em] text-[#8d97ad]">
+                  {['User Details', 'Role & Access', 'Status', 'Actions'].map((label) => (
+                    <th className="px-4 py-4" key={label}>
                       {label}
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200">
+              <tbody>
                 {users.map((user) => (
-                  <tr key={user.id}>
+                  <tr className="border-t border-[var(--border)]" key={user.id}>
                     <td className="px-4 py-4">
-                      <p className="font-semibold text-[var(--text)]">{user.fullName}</p>
-                      <p className="text-sm text-muted">{user.email}</p>
+                      <div className="flex items-center gap-3">
+                        <Avatar name={user.fullName} size="sm" src={user.avatarUrl} />
+                        <div>
+                          <p className="font-semibold text-[#1f2a44]">{user.fullName}</p>
+                          <p className="text-sm text-[#7b86a0]">{user.email}</p>
+                        </div>
+                      </div>
                     </td>
                     <td className="px-4 py-4">
-                      <Badge variant={user.role === 'Admin' ? 'violet' : 'brand'}>{user.role}</Badge>
+                      <Badge variant={user.role === 'Admin' ? 'brand' : 'default'}>{user.role}</Badge>
                     </td>
                     <td className="px-4 py-4">
-                      <Badge variant={user.isActive ? 'success' : 'danger'}>{user.isActive ? 'Active' : 'Inactive'}</Badge>
+                      <Badge variant={user.isActive ? 'warning' : 'danger'}>{user.isActive ? 'Active' : 'Inactive'}</Badge>
                     </td>
-                    <td className="px-4 py-4 text-sm text-muted">{formatDate(user.createdAt)}</td>
                     <td className="px-4 py-4">
                       <div className="flex flex-wrap gap-2">
                         <Button onClick={() => openRoleModal(user)} size="sm" variant="secondary">
@@ -319,7 +310,7 @@ function AdminPage() {
             </FormField>
           </div>
 
-          {inviteError ? <div className="rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-700">{inviteError}</div> : null}
+          {inviteError ? <div className="rounded-[16px] bg-[#fff1ee] px-4 py-3 text-sm text-[#ec6a60]">{inviteError}</div> : null}
 
           <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
             <Button onClick={() => setInviteOpen(false)} type="button" variant="secondary">

@@ -1,421 +1,487 @@
 import {
-  Activity,
   ArrowRight,
-  CheckCircle2,
-  CircleDollarSign,
+  BarChart3,
+  Bell,
+  BookOpen,
+  Grid2x2,
   LayoutDashboard,
+  Mail,
+  MoreHorizontal,
+  Play,
   ShieldCheck,
   Sparkles,
-  UserRoundPlus,
+  UserRound,
   Users,
+  Workflow,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import Button from '../../components/ui/Button';
-import Card from '../../components/ui/Card';
 import { useAuth } from '../../hooks/useAuth';
 
-const HERO_STATS = [
-  { label: 'Pipeline value', value: '$286k', tone: 'bg-brand-50 text-brand-700' },
-  { label: 'Active deals', value: '48', tone: 'bg-amber-50 text-amber-700' },
-  { label: 'Reply rate', value: '92%', tone: 'bg-emerald-50 text-emerald-700' },
-];
-
-const QUICK_PROOF = [
-  { label: 'Customer workspace', value: 'CRUD ready' },
-  { label: 'Authentication', value: 'JWT session' },
-  { label: 'Admin control', value: 'Role based' },
-  { label: 'Deploy target', value: 'Vercel + Render' },
-];
-
-const CRM_FEATURES = [
+const desktopFeatures = [
   {
-    title: 'Pipeline visibility',
+    title: 'Automated Workflows',
     description:
-      'Watch deal value, active stages, and follow-up momentum from the same dashboard your team uses every day.',
-    icon: LayoutDashboard,
+      'Build fluid processes that execute automatically, reduce manual entry, and let the system handle the scaffolding.',
+    icon: Workflow,
+    className: 'home-bento-card lg:h-[328px]',
   },
   {
-    title: 'Customer operations',
+    title: 'Advanced Analytics',
     description:
-      'Create, edit, filter, sort, and review customer records without bouncing between unrelated admin-template pages.',
+      'Turn raw metrics into clear signals. The analytics layer is tuned for fast decisions instead of dashboard noise.',
+    icon: BarChart3,
+    className: 'home-bento-card lg:col-span-2 lg:h-[328px]',
+  },
+  {
+    title: 'Team Collaboration',
+    description:
+      'Coordinate handoffs, notes, and account ownership in one place without losing the primary objective.',
     icon: Users,
+    className: 'home-bento-card lg:col-span-2 lg:h-[242px]',
   },
   {
-    title: 'Access management',
-    description:
-      'Control team roles, invited users, and protected routes from an admin area that matches the same product language.',
-    icon: UserRoundPlus,
+    title: 'Enterprise Security',
+    description: 'Bank-grade encryption standard.',
+    icon: ShieldCheck,
+    className: 'home-accent-card lg:h-[242px]',
   },
 ];
 
-const WORKFLOW_STEPS = [
+const mobileFeatures = [
   {
-    title: 'Authenticate cleanly',
-    description: 'Login, register, restore session, and guard protected routes with a real backend-ready auth flow.',
+    title: 'Precision Analytics',
+    description: 'Cut through the noise. Real-time metrics presented with absolute clarity and zero clutter.',
+    icon: BarChart3,
   },
   {
-    title: 'Track the dashboard',
-    description: 'Surface customer counts, pipeline value, revenue trend, and activity in one crisp summary view.',
+    title: 'Fluid Workflows',
+    description: 'Designed for speed. Navigate complex datasets with intuitive, gesture-based controls.',
+    icon: Workflow,
   },
   {
-    title: 'Manage customers',
-    description: 'Move through list, detail, create, edit, and delete actions with proper state handling and feedback.',
-  },
-  {
-    title: 'Control team access',
-    description: 'Keep admin actions focused on users, roles, active state, and profile ownership instead of generic demo modules.',
+    title: 'Enterprise Security',
+    description: 'Bank-grade encryption ensuring your most sensitive data remains locked down and compliant.',
+    icon: ShieldCheck,
   },
 ];
 
-const PREVIEW_ROWS = [
-  { name: 'Ava Collins', company: 'Northline Studio', stage: 'Negotiation', value: '$24,000' },
-  { name: 'Mina Patel', company: 'Blue Harbor', stage: 'Won', value: '$61,000' },
-  { name: 'Carlos Vega', company: 'Orbit Works', stage: 'Proposal', value: '$17,500' },
+const desktopNav = [
+  { label: 'Features', href: '#features' },
+  { label: 'Solutions', href: '#solutions' },
+  { label: 'Pricing', href: '#footer' },
+  { label: 'Resources', href: '#footer' },
 ];
 
-function getStageTone(stage) {
-  switch (stage) {
-    case 'Won':
-      return 'bg-emerald-50 text-emerald-700';
-    case 'Negotiation':
-      return 'bg-amber-50 text-amber-700';
-    default:
-      return 'bg-slate-100 text-slate-600';
-  }
-}
+const footerGroups = [
+  {
+    title: 'PRODUCT',
+    links: ['Features', 'Integrations', 'Pricing', 'Changelog'],
+  },
+  {
+    title: 'COMPANY',
+    links: ['About Us', 'Careers', 'Blog', 'Contact'],
+  },
+  {
+    title: 'LEGAL',
+    links: ['Privacy Policy', 'Terms of Service', 'Cookie Policy'],
+  },
+];
 
-function HomePage() {
-  const { isAuthenticated } = useAuth();
+function AnalyticsChart() {
+  const bars = [18, 31, 45, 57, 74, 92];
+  const points = [
+    [24, 158],
+    [64, 136],
+    [104, 132],
+    [148, 110],
+    [190, 92],
+    [232, 48],
+    [282, 18],
+  ];
 
   return (
-    <div className="page-shell min-h-screen overflow-hidden">
-      <header className="sticky top-0 z-20 border-b border-white/60 bg-[rgba(250,251,255,0.88)] backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-5 sm:px-6 lg:px-8">
-          <Link className="flex items-center gap-3" to="/">
-            <img alt="Controllusion" className="h-11 w-11 rounded-[16px]" src="/favicon.svg" />
-            <div>
-              <p className="text-base font-extrabold text-brand-600">Controllusion</p>
-              <p className="text-xs font-semibold text-muted">CRM for customers, users, and pipeline ops</p>
-            </div>
+    <div className="relative h-[192px] w-full overflow-hidden rounded-[8px] bg-[#e6eeff] lg:max-w-[311px]">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(53,37,205,0.14),transparent_56%)]" />
+      <svg className="absolute inset-0 h-full w-full" fill="none" viewBox="0 0 308 192">
+        {[28, 60, 92, 124, 156].map((y) => (
+          <line key={y} stroke="rgba(70,69,85,0.14)" x1="0" x2="308" y1={y} y2={y} />
+        ))}
+      </svg>
+      <div className="absolute inset-x-0 bottom-0 flex h-full items-end gap-4 px-5 pb-4 pt-8">
+        {bars.map((height, index) => (
+          <div className="flex h-full flex-1 items-end" key={`${height}-${index}`}>
+            <div
+              className="w-full rounded-t-[6px] bg-[linear-gradient(180deg,#31c8ff_0%,#1e9be8_100%)] shadow-[0_14px_24px_-18px_rgba(30,155,232,0.85)]"
+              style={{ height: `${height}%` }}
+            />
+          </div>
+        ))}
+      </div>
+      <svg className="absolute inset-0 h-full w-full" fill="none" viewBox="0 0 308 192">
+        <polyline
+          points={points.map(([x, y]) => `${x},${y}`).join(' ')}
+          stroke="#f59e0b"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="3"
+        />
+        {points.map(([x, y]) => (
+          <circle cx={x} cy={y} fill="#f59e0b" key={`${x}-${y}`} r="3" />
+        ))}
+      </svg>
+    </div>
+  );
+}
+
+function MobileHome({ isAuthenticated, heroAction, secondaryAction }) {
+  const mobileNavItems = [
+    {
+      label: 'Home',
+      icon: Grid2x2,
+      to: '/',
+    },
+    {
+      label: isAuthenticated ? 'Dash' : 'Login',
+      icon: LayoutDashboard,
+      to: isAuthenticated ? '/dashboard' : '/login',
+    },
+    {
+      label: isAuthenticated ? 'Profile' : 'Join',
+      icon: UserRound,
+      to: isAuthenticated ? '/profile' : '/register',
+    },
+  ];
+
+  return (
+    <div className="min-h-screen overflow-hidden bg-[#f6f8ff] lg:hidden">
+      <div className="pointer-events-none absolute left-[-15%] top-[6%] h-64 w-64 rounded-full bg-[radial-gradient(circle,rgba(76,66,232,0.16)_0%,rgba(76,66,232,0)_72%)]" />
+      <div className="pointer-events-none absolute bottom-[22%] right-[-12%] h-72 w-72 rounded-full bg-[radial-gradient(circle,rgba(111,179,255,0.14)_0%,rgba(111,179,255,0)_72%)]" />
+
+      <header className="fixed inset-x-0 top-0 z-30 border-b border-[rgba(229,234,246,0.96)] bg-[rgba(255,255,255,0.96)] backdrop-blur">
+        <div className="mx-auto flex h-16 max-w-[560px] items-center justify-between px-4">
+          <button className="flex h-10 w-10 items-center justify-center rounded-[14px] bg-[#eef2ff] text-[#4c42e8]" type="button">
+            <Grid2x2 className="h-4 w-4" />
+          </button>
+          <p className="text-sm font-black tracking-[-0.03em] text-[#1f2a44]">Controllusion</p>
+          <button className="flex h-10 w-10 items-center justify-center rounded-[14px] bg-[#eef2ff] text-[#4c42e8]" type="button">
+            <Bell className="h-4 w-4" />
+          </button>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-[560px] px-4 pb-[94px] pt-20">
+        <div className="rounded-full bg-[#eef2ff] px-3 py-1.5 text-center text-[11px] font-bold uppercase tracking-[0.12em] text-[#4c42e8]">
+          New: AI Insights V2
+        </div>
+
+        <h1 className="mt-6 text-center text-[42px] font-black tracking-[-0.06em] text-[#1f2a44]">
+          Master your data.
+          <span className="block text-[#4c42e8]">Effortlessly.</span>
+        </h1>
+
+        <p className="mx-auto mt-4 max-w-[320px] text-center text-base leading-8 text-[#6d7890]">
+          The high-end workspace for decision makers. Precision analytics, fluid workflows, zero friction.
+        </p>
+
+        <div className="mt-8 space-y-3">
+          <Link
+            className="flex h-12 items-center justify-center rounded-[12px] bg-[linear-gradient(135deg,#4c42e8_0%,#5a49f4_100%)] text-sm font-bold text-white shadow-[0_18px_30px_-20px_rgba(76,66,232,0.85)]"
+            to={heroAction.to}
+          >
+            {isAuthenticated ? 'Open Dashboard' : 'Start Free Trial'}
+          </Link>
+          <Link
+            className="flex h-12 items-center justify-center rounded-[12px] bg-[#dbe5ff] text-sm font-bold text-[#2f2ac8]"
+            to={secondaryAction.to}
+          >
+            {isAuthenticated ? 'View Customers' : 'View Demo'}
+          </Link>
+        </div>
+
+        <div className="mt-8 overflow-hidden rounded-[18px] border border-white/70 bg-white p-2 shadow-[0_20px_44px_-28px_rgba(17,24,39,0.26)]">
+          <img
+            alt="Controllusion preview"
+            className="h-[260px] w-full rounded-[14px] object-cover"
+            src="/figma-dashboard-preview.png"
+          />
+        </div>
+
+        <section className="mt-10" id="mobile-features">
+          <h2 className="text-[24px] font-black tracking-[-0.04em] text-[#1f2a44]">Why Controllusion?</h2>
+          <div className="mt-5 space-y-4">
+            {mobileFeatures.map((feature) => (
+              <article
+                className="rounded-[18px] border border-[rgba(237,240,251,0.96)] bg-white p-5 shadow-[0_18px_40px_-34px_rgba(31,42,68,0.12)]"
+                key={feature.title}
+              >
+                <div className="flex h-11 w-11 items-center justify-center rounded-[14px] bg-[#eef2ff] text-[#4c42e8]">
+                  <feature.icon className="h-5 w-5" />
+                </div>
+                <h3 className="mt-4 text-[22px] font-black tracking-[-0.04em] text-[#1f2a44]">{feature.title}</h3>
+                <p className="mt-3 text-sm leading-7 text-[#6d7890]">{feature.description}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+      </main>
+
+      <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-[rgba(229,234,246,0.96)] bg-[rgba(255,255,255,0.96)] px-3 pb-[calc(env(safe-area-inset-bottom,0px)+12px)] pt-3 backdrop-blur">
+        <div className="mx-auto flex max-w-[560px] items-center gap-2">
+          {mobileNavItems.map((item, index) => (
+            <Link
+              className={`flex flex-1 flex-col items-center gap-1.5 rounded-[14px] px-2 py-2 text-[10px] font-bold uppercase tracking-[0.12em] ${
+                index === 0
+                  ? 'bg-[linear-gradient(135deg,#4c42e8_0%,#5a49f4_100%)] text-white'
+                  : 'text-[#7e89a3]'
+              }`}
+              key={item.label}
+              to={item.to}
+            >
+              <item.icon className="h-4 w-4" />
+              <span>{item.label}</span>
+            </Link>
+          ))}
+          <a
+            className="flex flex-1 flex-col items-center gap-1.5 rounded-[14px] px-2 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-[#7e89a3]"
+            href="#mobile-features"
+          >
+            <MoreHorizontal className="h-4 w-4" />
+            <span>More</span>
+          </a>
+        </div>
+      </nav>
+    </div>
+  );
+}
+
+function DesktopHome({ currentYear, isAuthenticated, heroAction, primaryAction, secondaryAction }) {
+  return (
+    <div className="home-shell hidden min-h-screen overflow-x-hidden font-ui lg:block" id="top">
+      <header className="home-topbar fixed inset-x-0 top-0 z-40">
+        <div className="mx-auto flex h-16 max-w-[1280px] items-center justify-between px-4 sm:px-6 lg:px-8">
+          <Link className="font-display text-[20px] font-bold tracking-[-0.05em] text-[#0d1c2f]" to="/">
+            Controllusion
           </Link>
 
-          <nav className="hidden items-center gap-8 text-sm font-bold text-slate-500 md:flex">
-            <a href="#overview">Overview</a>
-            <a href="#features">Features</a>
-            <a href="#workflow">Workflow</a>
+          <nav className="flex items-center gap-8">
+            {desktopNav.map((item) => (
+              <a
+                className="text-sm font-medium tracking-[-0.02em] text-[#464555] transition hover:text-[#0d1c2f]"
+                href={item.href}
+                key={item.label}
+              >
+                {item.label}
+              </a>
+            ))}
           </nav>
 
-          <div className="flex items-center gap-3">
-            {!isAuthenticated ? (
-              <>
-                <Link className="hidden sm:block" to="/login">
-                  <Button variant="ghost">Login</Button>
-                </Link>
-                <Link to="/register">
-                  <Button>Get Started</Button>
-                </Link>
-              </>
-            ) : (
-              <Link to="/dashboard">
-                <Button>Open Dashboard</Button>
-              </Link>
-            )}
+          <div className="flex items-center gap-4">
+            <Link className="text-sm font-medium text-[#464555] transition hover:text-[#0d1c2f]" to={secondaryAction.to}>
+              {secondaryAction.label}
+            </Link>
+            <Link
+              className="inline-flex items-center justify-center rounded-[12px] bg-[linear-gradient(161deg,#3525cd_0%,#4f46e5_100%)] px-5 py-2.5 text-sm font-medium text-white shadow-[0_10px_15px_-3px_rgba(53,37,205,0.2),0_4px_6px_-4px_rgba(53,37,205,0.2)] transition hover:translate-y-[-1px]"
+              to={primaryAction.to}
+            >
+              {primaryAction.label}
+            </Link>
           </div>
         </div>
       </header>
 
-      <main className="relative">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-[560px] bg-[radial-gradient(circle_at_top_left,rgba(79,128,255,0.18),transparent_32%),radial-gradient(circle_at_top_right,rgba(123,160,255,0.18),transparent_28%)]" />
+      <main className="pt-16">
+        <section className="mx-auto flex max-w-[1280px] flex-col items-center px-4 pb-24 pt-16 text-center sm:px-6 lg:px-8 lg:pb-32">
+          <div className="home-enter flex flex-col items-center">
+            <div className="inline-flex items-center gap-2 rounded-full bg-[#eff4ff] px-4 py-1.5 text-sm font-medium text-[#3525cd]">
+              <Sparkles className="h-4 w-4" />
+              Introducing Controllusion AI 2.0
+            </div>
 
-        <section className="px-4 pb-10 pt-14 sm:px-6 lg:px-8 lg:pt-20" id="overview">
-          <div className="mx-auto grid max-w-7xl gap-14 lg:grid-cols-[0.82fr_1.18fr] lg:items-center">
-            <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-brand-100 bg-white/90 px-4 py-2 text-sm font-extrabold text-brand-700 shadow-[0_16px_35px_-28px_rgba(79,128,255,0.65)]">
-                <Sparkles className="h-4 w-4" />
-                Controllusion CRM workspace
-              </div>
+            <h1 className="font-display mt-8 max-w-[896px] text-[72px] font-extrabold leading-[0.95] tracking-[-0.05em] text-[#0d1c2f]">
+              Revolutionize your
+              <br />
+              customer relationships
+            </h1>
 
-              <h1 className="mt-7 max-w-3xl text-5xl font-black tracking-tight text-[var(--text)] sm:text-6xl">
-                The first screen should already feel like the CRM.
-              </h1>
+            <p className="mt-6 max-w-[672px] text-[20px] leading-[28px] text-[#464555]">
+              The high-end CRM designed for precision and fluidity. Automate workflows, gain advanced analytics, and
+              empower your team to close deals faster.
+            </p>
 
-              <p className="mt-6 max-w-2xl text-lg leading-8 text-muted">
-                Controllusion is a focused customer relationship workspace with a polished dashboard, clean customer flow,
-                protected user access, and backend-connected actions. The landing page now introduces the same product
-                language you see after login.
-              </p>
+            <div className="mt-10 flex gap-4">
+              <Link className="home-primary-btn" to={heroAction.to}>
+                {isAuthenticated ? 'Open Dashboard' : 'Get Started Free'}
+                <ArrowRight className="h-4 w-4" />
+              </Link>
 
-              <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-                <Link to={isAuthenticated ? '/dashboard' : '/register'}>
-                  <Button className="w-full sm:w-auto" size="lg">
-                    {isAuthenticated ? 'Go to dashboard' : 'Create account'}
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
+              {isAuthenticated ? (
+                <Link className="home-secondary-btn" to="/customers">
+                  <Users className="h-4 w-4" />
+                  Open Pipeline
                 </Link>
-                <Link to={isAuthenticated ? '/customers' : '/login'}>
-                  <Button className="w-full sm:w-auto" size="lg" variant="secondary">
-                    {isAuthenticated ? 'View customers' : 'Login'}
-                  </Button>
-                </Link>
-              </div>
+              ) : (
+                <a className="home-secondary-btn" href="#solutions">
+                  <Play className="h-4 w-4" />
+                  Watch Demo
+                </a>
+              )}
+            </div>
+          </div>
 
-              <div className="mt-10 grid gap-3 sm:grid-cols-2">
-                {[
-                  'Light dashboard shell, rounded cards, and blue-accent hierarchy pulled from the CRM screens.',
-                  'Customers, profile, dashboard, and admin stay in one coherent flow instead of random template modules.',
-                  'Prepared for Java backend plus PostgreSQL deployment while keeping the frontend interaction clean.',
-                  'Responsive layout that still looks intentional on smaller screens instead of collapsing into empty filler.',
-                ].map((item) => (
-                  <p
-                    className="flex items-start gap-3 rounded-[20px] bg-white/80 px-4 py-4 text-sm font-semibold text-slate-600 shadow-[0_22px_40px_-34px_rgba(17,24,39,0.22)]"
-                    key={item}
+          <div
+            className="home-enter home-enter-delay mt-16 w-full max-w-[1024px] rounded-[16px] border border-[rgba(199,196,216,0.2)] bg-white p-2 shadow-[0_24px_64px_-12px_rgba(13,28,47,0.12)] sm:p-[9px]"
+            id="solutions"
+          >
+            <div className="relative overflow-hidden rounded-[12px]">
+              <img
+                alt="Controllusion dashboard preview"
+                className="w-full rounded-[12px] object-cover"
+                src="/figma-dashboard-preview.png"
+              />
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent to-[rgba(248,249,255,0.4)]" />
+            </div>
+          </div>
+        </section>
+
+        <section className="mx-auto max-w-[1280px] scroll-mt-24 px-4 pb-24 sm:px-6 lg:px-8" id="features">
+          <div className="mx-auto max-w-3xl text-center">
+            <h2 className="font-display text-[36px] font-bold tracking-[-0.04em] text-[#0d1c2f]">
+              Precision tools for modern teams
+            </h2>
+            <p className="mt-4 text-[18px] leading-7 text-[#464555]">
+              Everything you need, nothing you don&apos;t. Designed for clarity.
+            </p>
+          </div>
+
+          <div className="mt-16 grid gap-6 lg:grid-cols-3 lg:grid-rows-[328px_242px]">
+            {desktopFeatures.map((feature) => {
+              const isAnalytics = feature.title === 'Advanced Analytics';
+              const isSecurity = feature.title === 'Enterprise Security';
+              const isTeam = feature.title === 'Team Collaboration';
+
+              return (
+                <article className={feature.className} key={feature.title}>
+                  <div
+                    className={`flex h-12 w-12 items-center justify-center rounded-[12px] ${
+                      isSecurity ? 'bg-[rgba(255,255,255,0.2)] text-white' : 'bg-[#e6eeff] text-[#3525cd]'
+                    }`}
                   >
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" />
-                    {item}
-                  </p>
-                ))}
-              </div>
-            </div>
-
-            <div className="relative">
-              <div className="absolute -left-10 top-10 hidden h-36 w-36 rounded-full bg-brand-100/80 blur-3xl lg:block" />
-              <div className="absolute -right-8 top-16 hidden h-32 w-32 rounded-full bg-sky-100/90 blur-3xl lg:block" />
-
-              <div className="surface-panel overflow-hidden p-3 sm:p-4">
-                <div className="rounded-[28px] border border-white/80 bg-[linear-gradient(180deg,#ffffff_0%,#f4f7ff_100%)] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] sm:p-4">
-                  <div className="flex items-center justify-between rounded-[22px] border border-[color:var(--border)] bg-white px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <span className="h-2.5 w-2.5 rounded-full bg-rose-300" />
-                      <span className="h-2.5 w-2.5 rounded-full bg-amber-300" />
-                      <span className="h-2.5 w-2.5 rounded-full bg-emerald-300" />
-                    </div>
-                    <div className="hidden rounded-full bg-slate-100 px-4 py-1.5 text-xs font-extrabold text-slate-500 sm:block">
-                      controllusion.app/dashboard
-                    </div>
-                    <div className="rounded-full bg-brand-600 px-3 py-1.5 text-xs font-extrabold text-white">Live CRM</div>
-                  </div>
-
-                  <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                    {HERO_STATS.map((item) => (
-                      <div className="rounded-[24px] border border-[color:var(--border)] bg-white p-4 shadow-[0_18px_35px_-28px_rgba(17,24,39,0.14)]" key={item.label}>
-                        <span className={`inline-flex rounded-full px-3 py-1 text-xs font-extrabold ${item.tone}`}>{item.label}</span>
-                        <p className="mt-4 text-3xl font-black tracking-tight text-[var(--text)]">{item.value}</p>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="mt-4 overflow-hidden rounded-[28px] border border-[color:var(--border)] bg-white p-4 shadow-[0_20px_40px_-32px_rgba(17,24,39,0.18)]">
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <p className="text-sm font-extrabold uppercase tracking-[0.16em] text-brand-600">Dashboard preview</p>
-                        <h2 className="mt-2 text-xl font-black text-[var(--text)]">The same shell the app opens after login</h2>
-                      </div>
-                      <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-500">Backend-ready</div>
-                    </div>
-
-                    <div className="relative mt-4">
-                      <img
-                        alt="Controllusion dashboard preview"
-                        className="w-full rounded-[22px] border border-[color:var(--border)] shadow-[0_24px_50px_-34px_rgba(17,24,39,0.22)]"
-                        src="/figma-dashboard-preview.png"
-                      />
-
-                      <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_0.92fr]">
-                        <div className="rounded-[24px] bg-[color:var(--surface-muted)] p-4">
-                          <div className="flex items-center gap-3">
-                            <div className="flex h-11 w-11 items-center justify-center rounded-[16px] bg-brand-50 text-brand-700">
-                              <Activity className="h-5 w-5" />
-                            </div>
-                            <div>
-                              <p className="text-sm font-extrabold uppercase tracking-[0.14em] text-brand-600">Recent activity</p>
-                              <p className="mt-1 text-sm font-semibold text-slate-500">Meaningful CRM actions, not dead buttons</p>
-                            </div>
-                          </div>
-
-                          <div className="mt-4 space-y-3">
-                            {[
-                              { title: 'Customer invited', description: 'Leah Summers joined the active customer pipeline.', amount: '+$13.2k' },
-                              { title: 'Profile updated', description: 'Team identity and contact fields stayed in sync.', amount: 'Saved' },
-                            ].map((item) => (
-                              <div className="rounded-[18px] bg-white px-4 py-4" key={item.title}>
-                                <div className="flex items-start justify-between gap-4">
-                                  <div>
-                                    <p className="font-extrabold text-[var(--text)]">{item.title}</p>
-                                    <p className="mt-1 text-sm text-muted">{item.description}</p>
-                                  </div>
-                                  <span className="rounded-full bg-brand-50 px-3 py-1 text-xs font-black text-brand-600">{item.amount}</span>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div className="rounded-[24px] bg-[color:var(--surface-muted)] p-4">
-                          <div className="flex items-center gap-3">
-                            <div className="flex h-11 w-11 items-center justify-center rounded-[16px] bg-emerald-50 text-emerald-700">
-                              <CircleDollarSign className="h-5 w-5" />
-                            </div>
-                            <div>
-                              <p className="text-sm font-extrabold uppercase tracking-[0.14em] text-brand-600">Pipeline snapshot</p>
-                              <p className="mt-1 text-sm font-semibold text-slate-500">A clean mini version of the customer list</p>
-                            </div>
-                          </div>
-
-                          <div className="mt-4 space-y-3">
-                            {PREVIEW_ROWS.map((row) => (
-                              <div className="flex items-center justify-between gap-4 rounded-[18px] bg-white px-4 py-3" key={row.name}>
-                                <div>
-                                  <p className="font-extrabold text-[var(--text)]">{row.name}</p>
-                                  <p className="text-sm text-muted">{row.company}</p>
-                                </div>
-                                <div className="text-right">
-                                  <span className={`inline-flex rounded-full px-3 py-1 text-xs font-extrabold ${getStageTone(row.stage)}`}>{row.stage}</span>
-                                  <p className="mt-2 text-sm font-bold text-[var(--text)]">{row.value}</p>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="px-4 py-6 sm:px-6 lg:px-8">
-          <div className="mx-auto grid max-w-7xl gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            {QUICK_PROOF.map((item) => (
-              <div className="surface-card panel-outline p-5" key={item.label}>
-                <p className="text-sm font-semibold text-muted">{item.label}</p>
-                <p className="mt-3 text-3xl font-black text-[var(--text)]">{item.value}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="px-4 py-20 sm:px-6 lg:px-8" id="features">
-          <div className="mx-auto max-w-7xl">
-            <div className="max-w-2xl">
-              <p className="text-sm font-extrabold uppercase tracking-[0.16em] text-brand-600">Why it lands better now</p>
-              <h2 className="mt-4 text-4xl font-black tracking-tight text-[var(--text)]">
-                The first page now feels like the product, not a detached promo block.
-              </h2>
-              <p className="mt-4 text-lg leading-8 text-muted">
-                The same rounded cards, pale surfaces, KPI rhythm, and dashboard hierarchy now show up before the user even
-                logs in. That makes the entrance screen match the rest of Controllusion instead of fighting it.
-              </p>
-            </div>
-
-            <div className="mt-10 grid gap-6 lg:grid-cols-3">
-              {CRM_FEATURES.map((feature) => (
-                <Card className="h-full" key={feature.title}>
-                  <div className="flex h-12 w-12 items-center justify-center rounded-[16px] bg-brand-50 text-brand-700">
                     <feature.icon className="h-5 w-5" />
                   </div>
-                  <h3 className="mt-5 text-xl font-black text-[var(--text)]">{feature.title}</h3>
-                  <p className="mt-3 text-sm leading-7 text-muted">{feature.description}</p>
-                </Card>
+
+                  {isAnalytics ? (
+                    <div className="mt-6 flex h-full items-center justify-between gap-6">
+                      <div className="max-w-[310px]">
+                        <h3 className="font-display text-[20px] font-bold text-[#0d1c2f]">{feature.title}</h3>
+                        <p className="mt-3 text-[16px] leading-[26px] text-[#464555]">{feature.description}</p>
+                        <a
+                          className="mt-6 inline-flex items-center gap-2 text-[16px] font-medium text-[#3525cd] transition hover:text-[#2314b1]"
+                          href="#footer"
+                        >
+                          Explore Analytics
+                          <ArrowRight className="h-4 w-4" />
+                        </a>
+                      </div>
+                      <AnalyticsChart />
+                    </div>
+                  ) : (
+                    <>
+                      <h3
+                        className={`font-display mt-6 font-bold ${
+                          isSecurity ? 'text-white' : 'text-[#0d1c2f]'
+                        } ${isTeam ? 'text-[24px]' : 'text-[20px]'}`}
+                      >
+                        {feature.title}
+                      </h3>
+                      <p
+                        className={`mt-3 ${
+                          isSecurity ? 'text-[rgba(255,255,255,0.82)]' : 'text-[#464555]'
+                        } ${isTeam ? 'max-w-[576px] text-[18px] leading-[29px]' : 'text-[16px] leading-[26px]'}`}
+                      >
+                        {feature.description}
+                      </p>
+                    </>
+                  )}
+                </article>
+              );
+            })}
+          </div>
+        </section>
+
+        <footer className="border-t border-[rgba(199,196,216,0.1)] bg-white" id="footer">
+          <div className="mx-auto max-w-[1280px] px-4 py-16 sm:px-6 lg:px-8">
+            <div className="grid gap-10 lg:grid-cols-[2fr_repeat(3,minmax(0,1fr))]">
+              <div>
+                <p className="font-display text-[20px] font-bold tracking-[-0.05em] text-[#0d1c2f]">Controllusion</p>
+                <p className="mt-4 max-w-[320px] text-sm leading-6 text-[#464555]">
+                  The architectural minimalist CRM for modern enterprise teams.
+                </p>
+                <div className="mt-6 flex items-center gap-4">
+                  <a aria-label="Contact Controllusion" className="home-social-link" href="#top">
+                    <Mail className="h-4 w-4" />
+                  </a>
+                  <a aria-label="Read the Controllusion handbook" className="home-social-link" href="#features">
+                    <BookOpen className="h-4 w-4" />
+                  </a>
+                </div>
+              </div>
+
+              {footerGroups.map((group) => (
+                <div key={group.title}>
+                  <p className="text-sm font-bold tracking-[0.05em] text-[#0d1c2f]">{group.title}</p>
+                  <div className="mt-4 space-y-3">
+                    {group.links.map((item) => (
+                      <a
+                        className="block text-sm text-[#464555] transition hover:text-[#0d1c2f]"
+                        href={item === 'Features' ? '#features' : '#footer'}
+                        key={item}
+                      >
+                        {item}
+                      </a>
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
-          </div>
-        </section>
 
-        <section className="px-4 pb-14 sm:px-6 lg:px-8" id="workflow">
-          <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1fr_0.92fr]">
-            <Card>
-              <p className="text-sm font-extrabold uppercase tracking-[0.16em] text-brand-600">CRM workflow</p>
-              <h3 className="mt-4 text-3xl font-black text-[var(--text)]">
-                Built around the pages that actually matter for the final CRM scope.
-              </h3>
-              <p className="mt-4 text-sm leading-7 text-muted">
-                Instead of random template categories, the system stays centered on auth, dashboard, customers, profile,
-                admin, and error handling. The home page now previews that exact product direction.
-              </p>
-
-              <div className="mt-8 space-y-4">
-                {WORKFLOW_STEPS.map((item, index) => (
-                  <div className="flex gap-4 rounded-[22px] bg-[color:var(--surface-muted)] px-4 py-4" key={item.title}>
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] bg-white text-sm font-black text-brand-600 shadow-[0_16px_28px_-22px_rgba(17,24,39,0.22)]">
-                      0{index + 1}
-                    </div>
-                    <div>
-                      <p className="font-extrabold text-[var(--text)]">{item.title}</p>
-                      <p className="mt-1 text-sm leading-7 text-muted">{item.description}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Card>
-
-            <div className="grid gap-6">
-              <Card>
-                <p className="text-sm font-extrabold uppercase tracking-[0.16em] text-brand-600">Primary navigation</p>
-                <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                  {['Dashboard', 'Customers', 'Profile', 'Admin'].map((item, index) => (
-                    <div className="rounded-[18px] border border-[color:var(--border)] bg-white px-4 py-4" key={item}>
-                      <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-400">0{index + 1}</p>
-                      <p className="mt-2 text-lg font-black text-[var(--text)]">{item}</p>
-                    </div>
-                  ))}
-                </div>
-              </Card>
-
-              <Card>
-                <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-[16px] bg-brand-50 text-brand-700">
-                    <ShieldCheck className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-extrabold uppercase tracking-[0.16em] text-brand-600">API ready</p>
-                    <p className="mt-1 text-sm font-semibold text-slate-500">Frontend on Vercel. Backend on Render. Database on Neon.</p>
-                  </div>
-                </div>
-                <p className="mt-5 text-sm leading-7 text-muted">
-                  The frontend uses an environment-based API URL, and the backend exposes JWT auth, customer CRUD, dashboard
-                  summary, profile updates, and admin user management behind `/api`.
-                </p>
-              </Card>
-            </div>
-          </div>
-        </section>
-
-        <section className="px-4 pb-24 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-7xl">
-            <div className="surface-panel overflow-hidden px-6 py-8 sm:px-8 sm:py-10">
-              <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
-                <div>
-                  <p className="text-sm font-extrabold uppercase tracking-[0.16em] text-brand-600">Get started</p>
-                  <h2 className="mt-3 text-3xl font-black tracking-tight text-[var(--text)] sm:text-4xl">
-                    Open the CRM, sign in, and continue in the same visual system from the first click.
-                  </h2>
-                  <p className="mt-4 max-w-2xl text-base leading-8 text-muted">
-                    The landing page now introduces Controllusion with the same polished UI direction as the dashboard,
-                    customer list, profile, and admin views.
-                  </p>
-                </div>
-
-                <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
-                  <Link to={isAuthenticated ? '/dashboard' : '/register'}>
-                    <Button className="w-full sm:w-auto lg:w-full" size="lg">
-                      {isAuthenticated ? 'Open dashboard' : 'Create account'}
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                  <Link to={isAuthenticated ? '/customers' : '/login'}>
-                    <Button className="w-full sm:w-auto lg:w-full" size="lg" variant="secondary">
-                      {isAuthenticated ? 'Browse customers' : 'Sign in'}
-                    </Button>
-                  </Link>
-                </div>
+            <div className="mt-12 flex items-center justify-between border-t border-[rgba(199,196,216,0.1)] pt-8 text-sm text-[#464555]">
+              <p>{`Copyright ${currentYear} Controllusion Inc. All rights reserved.`}</p>
+              <div className="inline-flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-[#22c55e]" />
+                All systems operational
               </div>
             </div>
           </div>
-        </section>
+        </footer>
       </main>
     </div>
+  );
+}
+
+function HomePage() {
+  const { isAuthenticated } = useAuth();
+  const currentYear = new Date().getFullYear();
+  const primaryAction = isAuthenticated
+    ? { label: 'Open Dashboard', to: '/dashboard' }
+    : { label: 'Get Started', to: '/register' };
+  const heroAction = isAuthenticated
+    ? { label: 'Open Dashboard', to: '/dashboard' }
+    : { label: 'Get Started Free', to: '/register' };
+  const secondaryAction = isAuthenticated
+    ? { label: 'Customers', to: '/customers' }
+    : { label: 'Log In', to: '/login' };
+
+  return (
+    <>
+      <MobileHome heroAction={heroAction} isAuthenticated={isAuthenticated} secondaryAction={secondaryAction} />
+      <DesktopHome
+        currentYear={currentYear}
+        heroAction={heroAction}
+        isAuthenticated={isAuthenticated}
+        primaryAction={primaryAction}
+        secondaryAction={secondaryAction}
+      />
+    </>
   );
 }
 

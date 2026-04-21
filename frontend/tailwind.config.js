@@ -5,6 +5,8 @@ export default {
     extend: {
       fontFamily: {
         sans: ['Nunito Sans', 'ui-sans-serif', 'system-ui'],
+        display: ['Manrope', 'ui-sans-serif', 'system-ui'],
+        ui: ['Inter', 'ui-sans-serif', 'system-ui'],
       },
       colors: {
         brand: {

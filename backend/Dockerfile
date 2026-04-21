@@ -1,21 +1,15 @@
-FROM maven:3.9.9-eclipse-temurin-21 AS build
+FROM python:3.12-slim
 
 WORKDIR /app
 
-COPY pom.xml .
-RUN mvn -q -DskipTests dependency:go-offline
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
-COPY src ./src
-RUN mvn -q -DskipTests clean package
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-FROM eclipse-temurin:21-jre
-
-WORKDIR /app
-
-ENV JAVA_OPTS=""
-
-COPY --from=build /app/target/backend-*.jar app.jar
+COPY . .
 
 EXPOSE 8080
 
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]

@@ -8,10 +8,10 @@ function ProtectedRoute({ allowedRoles, mode = 'redirect', children }) {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center px-6">
-        <div className="surface-panel w-full max-w-md px-8 py-10 text-center">
-          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-slate-200 border-t-brand-600" />
-          <p className="mt-5 text-sm text-muted">Preparing your CRM...</p>
+      <div className="flex min-h-screen items-center justify-center bg-[#f6f8ff] px-6">
+        <div className="w-full max-w-md rounded-[24px] border border-[var(--border)] bg-white px-8 py-10 text-center shadow-[0_30px_60px_-34px_rgba(17,24,39,0.2)]">
+          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-[#edf1fb] border-t-[#4c42e8]" />
+          <p className="mt-5 text-sm font-medium text-[#7b86a0]">Preparing your workspace...</p>
         </div>
       </div>
     );

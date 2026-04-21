@@ -1,17 +1,19 @@
 import { cx } from '../../utils/formatters';
 
 const variants = {
-  primary: 'border border-brand-600 bg-brand-600 text-white shadow-soft hover:border-brand-700 hover:bg-brand-700',
-  secondary: 'border border-[color:var(--border)] bg-white text-[var(--text)] hover:border-[color:var(--border-strong)] hover:bg-slate-50',
-  ghost: 'bg-transparent text-[var(--text)] hover:bg-white/80',
-  danger: 'border border-[#ff6b6b] bg-[#ff6b6b] text-white hover:border-[#f05f5f] hover:bg-[#f05f5f]',
-  subtle: 'bg-brand-50 text-brand-700 hover:bg-brand-100',
+  primary:
+    'border border-[#4c42e8] bg-[linear-gradient(135deg,#4c42e8_0%,#5a49f4_100%)] text-white shadow-[0_12px_24px_-14px_rgba(76,66,232,0.85)] hover:translate-y-[-1px] hover:shadow-[0_18px_30px_-16px_rgba(76,66,232,0.95)]',
+  secondary:
+    'border border-[#dfe6ff] bg-[#eef2ff] text-[#4c42e8] hover:border-[#d3dcff] hover:bg-[#e6ecff]',
+  ghost: 'border border-transparent bg-transparent text-[#51607a] hover:bg-[#f3f6ff] hover:text-[#1f2a44]',
+  danger: 'border border-[#ffd7d1] bg-[#fff4f1] text-[#f3704b] hover:border-[#ffc8be] hover:bg-[#ffede8]',
+  subtle: 'border border-[#edf1ff] bg-white text-[#1f2a44] hover:bg-[#f8f9ff]',
 };
 
 const sizes = {
-  sm: 'px-3.5 py-2.5 text-sm',
-  md: 'px-4.5 py-3 text-sm',
-  lg: 'px-5.5 py-3.5 text-base',
+  sm: 'min-h-[36px] px-3.5 py-2 text-sm',
+  md: 'min-h-[40px] px-4 py-2.5 text-sm',
+  lg: 'min-h-[46px] px-5 py-3 text-base',
 };
 
 function Button({
@@ -27,7 +29,7 @@ function Button({
   return (
     <button
       className={cx(
-        'inline-flex items-center justify-center gap-2 rounded-[16px] font-extrabold transition duration-200',
+        'inline-flex items-center justify-center gap-2 rounded-[12px] font-semibold transition duration-200',
         'focus:ring-4 focus:ring-brand-100 disabled:cursor-not-allowed disabled:opacity-60',
         sizes[size],
         variants[variant],

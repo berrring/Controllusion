@@ -22,20 +22,20 @@ function Modal({ children, onClose, open, title, description, maxWidth = 'max-w-
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/22 px-4 py-6 backdrop-blur-[4px]">
-      <div className={`surface-panel w-full ${maxWidth} rounded-[28px] p-6 sm:p-7`}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(17,24,39,0.24)] px-4 py-6 backdrop-blur-[6px]">
+      <button aria-label="Close modal" className="absolute inset-0" onClick={onClose} type="button" />
+      <div className={`relative w-full ${maxWidth} rounded-[24px] border border-[var(--border)] bg-white p-6 shadow-[0_30px_60px_-34px_rgba(17,24,39,0.38)] sm:p-7`}>
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h3 className="text-lg font-extrabold text-[var(--text)]">{title}</h3>
-            {description ? <p className="mt-1 text-sm text-muted">{description}</p> : null}
+            <h3 className="text-lg font-black tracking-[-0.03em] text-[#1f2a44]">{title}</h3>
+            {description ? <p className="mt-1 text-sm leading-6 text-[#6d7890]">{description}</p> : null}
           </div>
-          <button className="rounded-[14px] p-2 text-muted transition hover:bg-slate-100" onClick={onClose} type="button">
+          <button className="rounded-[14px] p-2 text-[#8d97ad] transition hover:bg-[#f5f7ff]" onClick={onClose} type="button">
             <X className="h-4 w-4" />
           </button>
         </div>
         <div className="mt-6">{children}</div>
       </div>
-      <button aria-label="Close modal" className="absolute inset-0 -z-10" onClick={onClose} type="button" />
     </div>
   );
 }

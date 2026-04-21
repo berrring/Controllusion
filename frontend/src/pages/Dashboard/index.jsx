@@ -1,40 +1,76 @@
 import { useEffect, useState } from 'react';
-import { Activity, CircleDollarSign, ListTodo, RefreshCw, Target, Users } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
 import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
+  CircleDollarSign,
+  FilePlus2,
+  Percent,
+  Plus,
+  RefreshCw,
+  Target,
+  TrendingUp,
+  Users,
+} from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
 import { getDashboardSummary } from '../../services/dashboardService';
 import LoadingSkeleton from '../../components/common/LoadingSkeleton';
 import ErrorState from '../../components/common/ErrorState';
 import EmptyState from '../../components/common/EmptyState';
 import PageHeader from '../../components/common/PageHeader';
-import StatCard from '../../components/ui/StatCard';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
-import Badge from '../../components/ui/Badge';
 import { formatCurrency, formatRelativeTime } from '../../utils/formatters';
 
-function getTaskStatusVariant(status) {
-  switch ((status || '').toLowerCase()) {
-    case 'done':
-    case 'completed':
-      return 'success';
-    case 'blocked':
-    case 'overdue':
-      return 'danger';
-    case 'in progress':
-    case 'active':
-      return 'brand';
-    default:
-      return 'warning';
-  }
+const CARD_META = [
+  {
+    key: 'pipelineValue',
+    label: 'TOTAL REVENUE',
+    change: '+12.5%',
+    changeTone: 'text-[#ef7c47]',
+    icon: CircleDollarSign,
+  },
+  {
+    key: 'totalCustomers',
+    label: 'ACTIVE CUSTOMERS',
+    change: '+4.2%',
+    changeTone: 'text-[#ef7c47]',
+    icon: Users,
+  },
+  {
+    key: 'activeDeals',
+    label: 'NEW LEADS',
+    change: '-1.8%',
+    changeTone: 'text-[#ec6a60]',
+    icon: Target,
+  },
+  {
+    key: 'conversionRate',
+    label: 'CONVERSION RATE',
+    change: '+0.6%',
+    changeTone: 'text-[#ef7c47]',
+    icon: Percent,
+    suffix: '%',
+  },
+];
+
+function DashboardMetricCard({ label, value, change, changeTone, icon: Icon }) {
+  return (
+    <Card className="rounded-[16px] p-5">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#8f99ae]">{label}</p>
+          <p className="mt-3 text-[18px] font-black text-[#1f2a44] sm:text-[20px]">{value}</p>
+          <div className="mt-3 flex items-center gap-2 text-xs font-medium text-[#7f889f]">
+            <TrendingUp className={`h-3.5 w-3.5 ${changeTone}`} />
+            <span className={changeTone}>{change}</span>
+            <span>vs last month</span>
+          </div>
+        </div>
+        <div className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-[#f4f6ff] text-[#5b50e9]">
+          <Icon className="h-4 w-4" />
+        </div>
+      </div>
+    </Card>
+  );
 }
 
 function DashboardPage() {
@@ -85,171 +121,161 @@ function DashboardPage() {
   const activityItems = summary?.activity || [];
   const taskItems = summary?.tasks || [];
 
+  const metricValues = {
+    pipelineValue: formatCurrency(summary?.pipelineValue || 0),
+    totalCustomers: Number(summary?.totalCustomers || 0).toLocaleString(),
+    activeDeals: Number(summary?.activeDeals || 0).toLocaleString(),
+    conversionRate: `${summary?.conversionRate || 0}%`,
+  };
+
   return (
-    <div className="space-y-7">
+    <div className="space-y-6">
       <PageHeader
+        mobileHidden
         actions={
-          <Button isLoading={refreshing} onClick={() => loadSummary({ silent: true })} variant="secondary">
-            <RefreshCw className="h-4 w-4" />
-            Refresh data
-          </Button>
+          <>
+            <Button isLoading={refreshing} onClick={() => loadSummary({ silent: true })} variant="secondary">
+              <RefreshCw className="h-4 w-4" />
+              Refresh
+            </Button>
+            <Button variant="subtle">
+              <FilePlus2 className="h-4 w-4" />
+              Create Invoice
+            </Button>
+            <Link to="/customers/create">
+              <Button>
+                <Plus className="h-4 w-4" />
+                Add Customer
+              </Button>
+            </Link>
+          </>
         }
-        description="Review live CRM metrics, revenue trends, team activity, and follow-up work from one overview."
-        title="Dashboard"
+        description="Monitor your key metrics and recent activities."
+        title="Overview"
       />
 
-      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-        <StatCard icon={Users} label="Total customers" tone="violet" value={summary?.totalCustomers || 0} />
-        <StatCard icon={Target} label="Active deals" tone="warning" value={summary?.activeDeals || 0} />
-        <StatCard icon={CircleDollarSign} isCurrency label="Pipeline value" tone="success" value={summary?.pipelineValue || 0} />
-        <StatCard
-          icon={Activity}
-          label="Conversion rate"
-          suffix="%"
-          tone="brand"
-          trend={`${summary?.activeDeals || 0} deals currently in progress`}
-          value={summary?.conversionRate || 0}
-        />
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {CARD_META.map((item) => (
+          <DashboardMetricCard
+            change={item.change}
+            changeTone={item.changeTone}
+            icon={item.icon}
+            key={item.key}
+            label={item.label}
+            value={metricValues[item.key]}
+          />
+        ))}
       </div>
 
-      <Card className="overflow-hidden p-0">
-        <div className="flex items-center justify-between border-b border-[color:var(--border)] px-6 py-5">
+      <div className="grid gap-5 xl:grid-cols-[1.45fr_0.55fr]">
+        <Card className="rounded-[18px]">
+          <div className="mb-5 flex items-center justify-between gap-4">
             <div>
-              <h2 className="text-[18px] font-black text-[var(--text)] sm:text-[20px]">Revenue trend</h2>
-              <p className="mt-1 text-sm text-muted">Track revenue growth as you add and update customers in your CRM workspace.</p>
+              <h2 className="text-[24px] font-black text-[#1f2a44]">Monthly Growth</h2>
+              <p className="mt-1 text-sm text-[#7b86a0]">Track pipeline revenue across the last six months.</p>
             </div>
+            <button className="text-xl font-bold text-[#909ab0]" type="button">
+              ...
+            </button>
           </div>
 
-        <div className="h-[390px] px-4 py-6 sm:px-6">
-          {revenueSeries.length ? (
-            <ResponsiveContainer height="100%" width="100%">
-              <AreaChart data={revenueSeries} margin={{ top: 12, right: 10, left: -4, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="crmRevenueGradient" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="0%" stopColor="#4F80FF" stopOpacity={0.22} />
-                    <stop offset="100%" stopColor="#4F80FF" stopOpacity={0.02} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid stroke="#eef1f7" vertical={false} />
-                <XAxis axisLine={false} dataKey="name" tick={{ fill: '#b3bbc9', fontSize: 11 }} tickLine={false} />
-                <YAxis
-                  axisLine={false}
-                  tick={{ fill: '#b3bbc9', fontSize: 11 }}
-                  tickFormatter={(value) => `$${Math.round(value / 1000)}k`}
-                  tickLine={false}
+          <div className="h-[320px] rounded-[16px] bg-[linear-gradient(180deg,#fbfcff_0%,#f6f8ff_100%)] p-4">
+            {revenueSeries.length ? (
+              <ResponsiveContainer height="100%" width="100%">
+                <BarChart data={revenueSeries} margin={{ top: 20, right: 10, left: 0, bottom: 0 }}>
+                  <CartesianGrid stroke="#edf1fb" vertical={false} />
+                  <XAxis
+                    axisLine={false}
+                    dataKey="name"
+                    tick={{ fill: '#8d97ad', fontSize: 12, fontWeight: 600 }}
+                    tickLine={false}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      borderRadius: 16,
+                      border: '1px solid #e5eaf6',
+                      boxShadow: '0 18px 45px -28px rgba(31,42,68,0.18)',
+                    }}
+                    cursor={{ fill: 'rgba(76,66,232,0.06)' }}
+                    formatter={(value) => [formatCurrency(value), 'Revenue']}
+                  />
+                  <Bar dataKey="revenue" fill="#4c42e8" radius={[8, 8, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex h-full items-center justify-center">
+                <EmptyState
+                  actionLabel="Add first customer"
+                  description="New accounts start with an empty pipeline. Add a customer to unlock the overview cards and growth chart."
+                  onAction={() => navigate('/customers/create')}
+                  title="No revenue data yet"
                 />
-                <Tooltip
-                  contentStyle={{
-                    borderRadius: 18,
-                    border: '1px solid #eceff6',
-                    boxShadow: '0 24px 45px -34px rgba(17,24,39,0.18)',
-                  }}
-                  formatter={(value, name) =>
-                    name === 'revenue' ? [formatCurrency(value), 'Revenue'] : [value, 'Deals']
-                  }
-                />
-                <Area
-                  activeDot={{ fill: '#4F80FF', r: 5, stroke: '#fff', strokeWidth: 2 }}
-                  dataKey="revenue"
-                  dot={{ fill: '#4F80FF', r: 2.8, strokeWidth: 0 }}
-                  fill="url(#crmRevenueGradient)"
-                  isAnimationActive={false}
-                  stroke="#4F80FF"
-                  strokeWidth={2}
-                  type="monotone"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="flex h-full items-center justify-center">
-              <EmptyState
-                actionLabel="Add first customer"
-                description="New accounts start with an empty pipeline. Create your first customer and deal value to unlock dashboard analytics."
-                onAction={() => navigate('/customers/create')}
-                title="No revenue data yet"
-              />
-            </div>
-          )}
-        </div>
-      </Card>
+              </div>
+            )}
+          </div>
+        </Card>
 
-      <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-        <Card>
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <h2 className="text-xl font-semibold text-[var(--text)]">Recent activity</h2>
-              <p className="mt-1 text-sm text-muted">Recent CRM changes appear here after you create or edit customer records.</p>
-            </div>
+        <Card className="rounded-[18px] bg-[linear-gradient(180deg,#f6f8ff_0%,#eef2ff_100%)]">
+          <div className="mb-5">
+            <h2 className="text-[22px] font-black text-[#1f2a44]">Recent Activity</h2>
+            <p className="mt-1 text-sm text-[#7b86a0]">Live signals from the CRM workspace.</p>
           </div>
 
-          <div className="mt-6 space-y-4">
+          <div className="space-y-4">
             {activityItems.length ? (
-              activityItems.map((item) => (
-                <div className="rounded-3xl border border-slate-200 p-5" key={item.id || `${item.title}-${item.date}`}>
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-                      <p className="text-lg font-semibold text-[var(--text)]">{item.title || 'Activity update'}</p>
-                      <p className="mt-2 text-sm text-muted">{item.description || 'No details provided.'}</p>
-                      {item.customerId ? (
-                        <Link className="mt-3 inline-flex text-sm font-bold text-brand-600 transition hover:text-brand-700" to={`/customers/${item.customerId}`}>
-                          Open {item.customerName || 'customer'} record
-                        </Link>
-                      ) : null}
-                    </div>
-                    <Badge variant="default">{formatRelativeTime(item.date || item.createdAt)}</Badge>
+              activityItems.slice(0, 5).map((item, index) => (
+                <div className="flex items-start gap-3" key={item.id || `${item.title}-${index}`}>
+                  <span className="mt-1 flex h-8 w-8 items-center justify-center rounded-full bg-[#eef2ff] text-[11px] font-bold text-[#5b50e9]">
+                    {index + 1}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold leading-5 text-[#1f2a44]">{item.description || item.title}</p>
+                    <p className="mt-1 text-xs text-[#7b86a0]">{formatRelativeTime(item.date || item.createdAt)}</p>
                   </div>
                 </div>
               ))
             ) : (
               <EmptyState
                 actionLabel="Create customer"
-                description="Your activity feed is still empty. Add a customer or update a record to start building a visible history."
+                description="Create or edit a customer to start filling this activity stream."
                 onAction={() => navigate('/customers/create')}
                 title="No recent activity"
               />
             )}
           </div>
         </Card>
-
-        <Card>
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-[16px] bg-brand-50 text-brand-600">
-              <ListTodo className="h-5 w-5" />
-            </div>
-            <div>
-              <h2 className="text-xl font-semibold text-[var(--text)]">Open tasks</h2>
-              <p className="mt-1 text-sm text-muted">Suggested follow-ups appear here as your pipeline becomes active.</p>
-            </div>
-          </div>
-
-          <div className="mt-6 space-y-4">
-            {taskItems.length ? (
-              taskItems.map((task) => (
-                <div className="rounded-3xl bg-[color:var(--surface-muted)] p-5" key={task.id || `${task.title}-${task.dueDate}`}>
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="text-base font-black text-[var(--text)]">{task.title || task.name || 'Open task'}</p>
-                      <p className="mt-2 text-sm leading-7 text-muted">{task.description || 'No description provided.'}</p>
-                    </div>
-                    <Badge variant={getTaskStatusVariant(task.status)}>{task.status || 'Pending'}</Badge>
-                  </div>
-                  <div className="mt-4 flex flex-wrap gap-3 text-sm font-semibold text-muted">
-                    {task.owner ? <span>Owner: {task.owner}</span> : null}
-                    {task.dueDate ? <span>Due {formatRelativeTime(task.dueDate)}</span> : null}
-                  </div>
-                </div>
-              ))
-            ) : (
-              <EmptyState
-                actionLabel="Build pipeline"
-                description="There are no follow-up tasks yet. Once you add customers and move them past lead stage, reminders will appear here."
-                onAction={() => navigate('/customers/create')}
-                title="No open tasks"
-              />
-            )}
-          </div>
-        </Card>
       </div>
+
+      <Card className="rounded-[18px]">
+        <div className="mb-4 flex items-center justify-between gap-4">
+          <div>
+            <h2 className="text-[22px] font-black text-[#1f2a44]">Open Tasks</h2>
+            <p className="mt-1 text-sm text-[#7b86a0]">Follow-ups generated from your current pipeline.</p>
+          </div>
+        </div>
+
+        {taskItems.length ? (
+          <div className="grid gap-4 lg:grid-cols-3">
+            {taskItems.map((task) => (
+              <div className="rounded-[16px] border border-[var(--border)] bg-[#fbfcff] p-4" key={task.id || task.title}>
+                <p className="text-base font-bold text-[#1f2a44]">{task.title || 'Open task'}</p>
+                <p className="mt-2 text-sm leading-6 text-[#6d7890]">{task.description || 'No description provided.'}</p>
+                <div className="mt-4 flex flex-wrap items-center gap-3 text-xs font-medium text-[#8d97ad]">
+                  {task.owner ? <span>{task.owner}</span> : null}
+                  {task.dueDate ? <span>{formatRelativeTime(task.dueDate)}</span> : null}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <EmptyState
+            actionLabel="Build pipeline"
+            description="There are no follow-up tasks yet. Once deals move past lead stage, they will appear here."
+            onAction={() => navigate('/customers/create')}
+            title="No open tasks"
+          />
+        )}
+      </Card>
     </div>
   );
 }

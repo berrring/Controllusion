@@ -60,7 +60,10 @@ function DataTable({
 
       <div className="space-y-4 lg:hidden">
         {data.map((item) => (
-          <div className="surface-card panel-outline p-4" key={item.id}>
+          <div
+            className="rounded-[16px] border border-[var(--border)] bg-white p-4 shadow-[0_18px_40px_-34px_rgba(31,42,68,0.12)]"
+            key={item.id}
+          >
             {renderMobileCard(item)}
           </div>
         ))}

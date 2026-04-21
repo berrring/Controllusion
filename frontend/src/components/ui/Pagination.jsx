@@ -8,8 +8,8 @@ function Pagination({ currentPage, pageCount, onPageChange }) {
   const pages = Array.from({ length: pageCount }, (_, index) => index + 1);
 
   return (
-    <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
-      <p className="text-sm font-semibold text-muted">
+    <div className="flex flex-col gap-3 border-t border-[var(--border)] pt-5 sm:flex-row sm:items-center sm:justify-between">
+      <p className="text-sm font-medium text-[#7b86a0]">
         Page {currentPage} of {pageCount}
       </p>
       <div className="flex flex-wrap items-center gap-2">
@@ -18,10 +18,10 @@ function Pagination({ currentPage, pageCount, onPageChange }) {
         </Button>
         {pages.map((page) => (
           <button
-            className={`h-10 min-w-10 rounded-[14px] border px-3 text-sm font-extrabold transition ${
+            className={`h-9 min-w-[2.25rem] rounded-[12px] border px-3 text-sm font-bold transition ${
               page === currentPage
-                ? 'border-brand-600 bg-brand-600 text-white'
-                : 'border-[color:var(--border)] bg-white text-slate-700 hover:border-brand-200 hover:bg-brand-50'
+                ? 'border-[#4c42e8] bg-[#4c42e8] text-white'
+                : 'border-[color:var(--border)] bg-white text-[#5f6a85] hover:border-[#d7def0] hover:bg-[#f8f9ff]'
             }`}
             key={page}
             onClick={() => onPageChange(page)}
