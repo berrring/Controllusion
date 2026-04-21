@@ -6,9 +6,6 @@ This repository is structured for real deployment:
 - `frontend` -> Vercel-ready React + Vite SPA
 - `backend` -> Render-ready Spring Boot + PostgreSQL API
 
-## Preview
-
-![Controllusion dashboard preview](./frontend/public/figma-dashboard-preview.png)
 
 ## Core Features
 
