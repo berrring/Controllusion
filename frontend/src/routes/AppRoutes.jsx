@@ -63,6 +63,7 @@ function AppRoutes() {
             <Route element={<CustomerDetailPage />} path="/customers/:id" />
             <Route element={<CustomerEditPage />} path="/customers/:id/edit" />
             <Route element={<ProfilePage />} path="/profile" />
+            <Route element={<ProfilePage />} path="/settings" />
             <Route element={<ProtectedRoute allowedRoles={['Admin']} mode="ui" />}>
               <Route element={<AdminPage />} path="/admin" />
             </Route>

@@ -34,7 +34,8 @@ function SidebarContent({ onNavigate }) {
   const navigate = useNavigate();
   const { logoutUser, user } = useAuth();
   const { showToast } = useContext(UIContext);
-  const navigationItems = user?.role === 'Admin' ? [...APP_NAV_ITEMS, ADMIN_NAV_ITEM] : APP_NAV_ITEMS;
+  const navigationItems =
+    user?.role === 'Admin' ? [APP_NAV_ITEMS[0], APP_NAV_ITEMS[1], ADMIN_NAV_ITEM, ...APP_NAV_ITEMS.slice(2)] : APP_NAV_ITEMS;
 
   async function handleLogout() {
     addActivityEntry({

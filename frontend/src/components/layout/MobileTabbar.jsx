@@ -42,7 +42,7 @@ function MobileNavLink({ item }) {
 function MobileTabbar() {
   const location = useLocation();
   const { setSidebarOpen } = useContext(UIContext);
-  const isMoreActive = location.pathname.startsWith('/admin');
+  const isMoreActive = location.pathname.startsWith('/admin') || location.pathname.startsWith('/settings');
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-[rgba(229,234,246,0.96)] bg-[rgba(255,255,255,0.96)] px-3 pb-[calc(env(safe-area-inset-bottom,0px)+12px)] pt-3 shadow-[0_-16px_36px_-30px_rgba(31,42,68,0.28)] backdrop-blur lg:hidden">

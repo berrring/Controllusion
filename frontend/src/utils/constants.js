@@ -3,6 +3,7 @@ import {
   Users,
   UserRound,
   Shield,
+  Settings,
   BriefcaseBusiness,
 } from 'lucide-react';
 
@@ -27,6 +28,11 @@ export const APP_NAV_ITEMS = [
     to: '/profile',
     label: 'Profile',
     icon: UserRound,
+  },
+  {
+    to: '/settings',
+    label: 'Settings',
+    icon: Settings,
   },
 ];
 
@@ -56,6 +62,11 @@ export const APP_SEARCH_ITEMS = [
     key: 'profile',
     label: 'Profile',
     path: '/profile',
+  },
+  {
+    key: 'settings',
+    label: 'Settings',
+    path: '/settings',
   },
   {
     key: 'admin',

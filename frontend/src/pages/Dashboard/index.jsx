@@ -119,7 +119,7 @@ function DashboardPage() {
     });
     showToast({
       title: 'Invoice draft created',
-      description: 'The fake backend saved a draft invoice in the activity stream.',
+      description: 'The draft invoice was added to your activity stream.',
     });
   }
 
@@ -127,7 +127,7 @@ function DashboardPage() {
     await loadSummary({ silent: true });
     showToast({
       title: 'Analytics refreshed',
-      description: 'The monthly growth panel was refreshed with the latest mock data.',
+      description: 'The monthly growth panel was refreshed successfully.',
       type: 'info',
     });
   }

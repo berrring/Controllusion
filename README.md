@@ -2,17 +2,11 @@
 
 Controllusion is a monorepo CRM with a React frontend and a Python FastAPI backend.
 
-The project currently supports two runtime modes:
-
-- `frontend` default mode: fake backend in the browser via `localStorage`
-- `backend` optional mode: real FastAPI API with JWT auth and seeded SQLite/Postgres data
-
 ## Current Stack
 
 | Layer | Stack |
 | --- | --- |
 | Frontend | React 18, Vite, React Router, Tailwind CSS, Axios, Recharts |
-| Frontend mock data | `localStorage` fake DB in `frontend/src/services/mockApi.js` |
 | Backend | FastAPI, SQLAlchemy, PyJWT, Passlib |
 | Database | SQLite by default, PostgreSQL-compatible via `DATABASE_URL` |
 | Deployment | Vercel-friendly frontend, Docker-ready Python backend |
@@ -24,7 +18,6 @@ The project currently supports two runtime modes:
 - Dashboard metrics, activity feed, and quick actions
 - Customer CRUD with search, filtering, sorting, pagination, detail, and edit screens
 - Admin-only team management with invite flow, role changes, and enable/disable actions
-- Mock mode with persistent browser data and duplicate email protection
 - Real FastAPI API with the same frontend contract
 
 ## Repo Structure
@@ -45,23 +38,9 @@ crm/
   README.md
 ```
 
-## Frontend Mock Mode
-
-The frontend is configured to use the fake backend by default.
-
-- `frontend/.env` contains `VITE_USE_MOCK_API=true`
-- the fake DB key is `controllusion_mock_db_v1`
-- data survives page refresh because it is stored in `localStorage`
-- duplicate email registration is blocked in mock mode
-- duplicate email updates are also blocked for profile edits and admin invites
-
-The mock service lives in:
-
-- `frontend/src/services/mockApi.js`
-
 ## Demo Accounts
 
-Available in both mock mode and seeded FastAPI mode:
+Available in the seeded app:
 
 | Role | Email | Password |
 | --- | --- | --- |
@@ -69,7 +48,7 @@ Available in both mock mode and seeded FastAPI mode:
 | User | `sara@controllusion.com` | `User@1234` |
 | Showcase User | `showcase@controllusion.com` | `Showcase@123` |
 
-Temporary password used by mock reset/invite flows:
+Temporary password used by invite and reset flows:
 
 - `Welcome@123`
 
@@ -89,6 +68,7 @@ Temporary password used by mock reset/invite flows:
 - `/customers/:id`
 - `/customers/:id/edit`
 - `/profile`
+- `/settings`
 
 ### Admin
 
@@ -133,24 +113,6 @@ All real backend routes are served under `/api`.
 - npm
 - Python 3.12+ recommended
 
-## Run Frontend Only
-
-This is the simplest mode and does not require the backend.
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Frontend URL:
-
-```text
-http://localhost:5173
-```
-
-## Run Full Stack
-
 ### 1. Start the backend
 
 ```bash
@@ -171,15 +133,7 @@ Health check:
 http://localhost:8080/health
 ```
 
-### 2. Switch frontend from mock mode to the real API
-
-Change `frontend/.env` to:
-
-```env
-VITE_USE_MOCK_API=false
-```
-
-Then run the frontend:
+### 2. Start the frontend
 
 ```bash
 cd frontend
@@ -187,7 +141,11 @@ npm install
 npm run dev
 ```
 
-If `VITE_API_BASE_URL` is not set, Vite proxies `/api` to `VITE_API_PROXY_TARGET` or `http://localhost:8080`.
+Frontend URL:
+
+```text
+http://localhost:5173
+```
 
 ## Environment Variables
 
@@ -195,7 +153,6 @@ If `VITE_API_BASE_URL` is not set, Vite proxies `/api` to `VITE_API_PROXY_TARGET
 
 | Variable | Purpose | Default |
 | --- | --- | --- |
-| `VITE_USE_MOCK_API` | Use browser fake backend instead of real API | `true` |
 | `VITE_API_BASE_URL` | Explicit API base URL for Axios | unset |
 | `VITE_API_PROXY_TARGET` | Dev proxy target when `VITE_API_BASE_URL` is unset | `http://localhost:8080` |
 
@@ -220,9 +177,6 @@ If `VITE_API_BASE_URL` is not set, Vite proxies `/api` to `VITE_API_PROXY_TARGET
 
 ## Frontend Notes
 
-- Auth/session state is stored in browser storage
-- Notifications and activity feed are also persisted in browser storage in mock mode
-- Avatar upload on the profile page is stored as a data URL in mock mode
 - The frontend build passes with `npm run build`
 
 ## Docker

@@ -57,6 +57,6 @@ export async function requestPasswordReset(email) {
 
   return {
     success: true,
-    message: 'Password reset is available in mock mode only.',
+    message: 'Password reset request was accepted.',
   };
 }
