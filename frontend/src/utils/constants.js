@@ -1,11 +1,19 @@
 import {
-  LayoutDashboard,
-  Users,
-  UserRound,
-  Shield,
-  Settings,
+  BarChart3,
   BriefcaseBusiness,
+  Clock3,
+  Diamond,
+  LayoutDashboard,
+  Settings,
+  Table2,
+  TrendingUp,
+  Users,
 } from 'lucide-react';
+
+export const APP_BRAND = {
+  name: 'Controllusion',
+  subtitle: 'Precision CRM',
+};
 
 export const STATUS_OPTIONS = ['New', 'Active', 'Inactive', 'VIP'];
 export const STAGE_OPTIONS = ['Lead', 'Qualified', 'Proposal', 'Negotiation', 'Won', 'Lost'];
@@ -20,14 +28,24 @@ export const APP_NAV_ITEMS = [
     icon: LayoutDashboard,
   },
   {
-    to: '/customers',
-    label: 'Customers',
+    to: '/leads',
+    label: 'Leads',
     icon: Users,
   },
   {
-    to: '/profile',
-    label: 'Profile',
-    icon: UserRound,
+    to: '/customers',
+    label: 'Accounts',
+    icon: Table2,
+  },
+  {
+    to: '/deals',
+    label: 'Deals',
+    icon: Diamond,
+  },
+  {
+    to: '/analytics',
+    label: 'Analytics',
+    icon: TrendingUp,
   },
   {
     to: '/settings',
@@ -36,10 +54,18 @@ export const APP_NAV_ITEMS = [
   },
 ];
 
+export const SECONDARY_NAV_ITEMS = [
+  {
+    to: '/activity',
+    label: 'Activity',
+    icon: Clock3,
+  },
+];
+
 export const ADMIN_NAV_ITEM = {
   to: '/admin',
-  label: 'Admin',
-  icon: Shield,
+  label: 'Team',
+  icon: BarChart3,
 };
 
 export const APP_SEARCH_ITEMS = [
@@ -49,14 +75,34 @@ export const APP_SEARCH_ITEMS = [
     path: '/dashboard',
   },
   {
+    key: 'leads',
+    label: 'Leads',
+    path: '/leads',
+  },
+  {
     key: 'customers',
-    label: 'Customers',
+    label: 'Accounts',
     path: '/customers',
   },
   {
     key: 'customers-create',
     label: 'Create customer',
     path: '/customers/create',
+  },
+  {
+    key: 'deals',
+    label: 'Deals',
+    path: '/deals',
+  },
+  {
+    key: 'analytics',
+    label: 'Analytics',
+    path: '/analytics',
+  },
+  {
+    key: 'activity',
+    label: 'Activity timeline',
+    path: '/activity',
   },
   {
     key: 'profile',

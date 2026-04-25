@@ -1,12 +1,12 @@
 import { useContext, useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import * as customerService from '../../services/customerService';
 import { UIContext } from '../../context/UIContext';
 import { addActivityEntry, addNotification } from '../../services/storage';
-import PageHeader from '../../components/common/PageHeader';
 import CustomerForm from '../../components/forms/CustomerForm';
 import LoadingSkeleton from '../../components/common/LoadingSkeleton';
 import ErrorState from '../../components/common/ErrorState';
+import Button from '../../components/ui/Button';
 
 function CustomerEditPage() {
   const navigate = useNavigate();
@@ -45,41 +45,40 @@ function CustomerEditPage() {
       path: `/customers/${id}`,
     });
     showToast({
-      title: 'Customer updated',
-      description: `${updatedCustomer.fullName} has been updated successfully.`,
+      title: 'Customer profile updated successfully',
+      description: `${updatedCustomer.fullName} is up to date.`,
     });
     navigate(`/customers/${id}`);
   }
 
   if (loading) {
-    return <LoadingSkeleton rows={8} />;
+    return <LoadingSkeleton rows={4} />;
   }
 
   if (error || !customer) {
-    return <ErrorState description={error || 'Customer not found.'} onRetry={loadCustomer} title="Unable to edit customer" />;
+    return <ErrorState description={error || 'Customer not found.'} onRetry={loadCustomer} />;
   }
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        breadcrumbs={[
-          { label: 'Dashboard', to: '/dashboard' },
-          { label: 'Customers', to: '/customers' },
-          { label: customer.fullName, to: `/customers/${id}` },
-          { label: 'Edit' },
-        ]}
-        description="Update customer details, stage, status, and notes while keeping the CRM record current."
-        title={`Edit ${customer.fullName}`}
-      />
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <Link className="text-[11px] font-bold text-[#52627b]" to="/customers">
+            ← Back to Accounts
+          </Link>
+          <h1 className="mt-2 text-[24px] font-black tracking-[-0.05em] text-[#14213d]">Edit Customer: {customer.company}</h1>
+        </div>
+        <div className="flex gap-3">
+          <Button onClick={() => navigate(`/customers/${id}`)} variant="secondary">
+            Cancel
+          </Button>
+          <Button form="customer-edit-proxy" onClick={() => document.querySelector('form')?.requestSubmit()} type="button">
+            Save Changes
+          </Button>
+        </div>
+      </div>
 
-      <CustomerForm
-        description="Refine account details and preserve a realistic editing workflow with validation and success feedback."
-        initialValues={customer}
-        onCancel={() => navigate(`/customers/${id}`)}
-        onSubmit={handleSubmit}
-        submitLabel="Update customer"
-        title="Edit customer information"
-      />
+      <CustomerForm initialValues={customer} onCancel={() => navigate(`/customers/${id}`)} onSubmit={handleSubmit} submitLabel="Save Changes" />
     </div>
   );
 }

@@ -1,387 +1,213 @@
-import { useContext, useEffect, useRef, useState } from 'react';
-import { ImagePlus, Trash2 } from 'lucide-react';
+import { useContext, useEffect, useState } from 'react';
+import { ShieldCheck } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { UIContext } from '../../context/UIContext';
 import { addActivityEntry, addNotification } from '../../services/storage';
-import { validatePasswordChange, validateProfile } from '../../utils/validation';
-import PageHeader from '../../components/common/PageHeader';
 import Avatar from '../../components/common/Avatar';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import FormField from '../../components/forms/FormField';
 
+function Toggle({ checked, onChange }) {
+  return (
+    <button
+      className={`relative h-5 w-9 rounded-full transition ${checked ? 'bg-[#4c42e8]' : 'bg-[#dfe6f2]'}`}
+      onClick={onChange}
+      type="button"
+    >
+      <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition ${checked ? 'left-[18px]' : 'left-0.5'}`} />
+    </button>
+  );
+}
+
+function splitName(name = '') {
+  const [firstName = '', ...rest] = name.split(' ');
+  return { firstName, lastName: rest.join(' ') || 'Mercer' };
+}
+
 function ProfilePage() {
-  const { user, saveProfile, updatePassword } = useAuth();
+  const { user, saveProfile } = useAuth();
   const { showToast } = useContext(UIContext);
-  const avatarInputRef = useRef(null);
-  const [profileValues, setProfileValues] = useState({
-    fullName: user?.fullName || '',
-    email: user?.email || '',
-    phone: user?.phone || '',
-    title: user?.title || '',
-    themePreference: user?.themePreference || 'light',
-    avatarUrl: user?.avatarUrl || null,
+  const initialName = splitName(user?.fullName || 'Alex Mercer');
+  const [values, setValues] = useState({
+    firstName: initialName.firstName,
+    lastName: initialName.lastName,
+    email: user?.email || 'alex.mercer@controllusion.com',
+    phone: user?.phone || '+1 (555) 019-2834',
+    bio: 'Senior Administrator focused on optimizing CRM workflows and leading cross-functional teams to drive enterprise sales efficiency. Over 8 years of experience in B2B SaaS environments.',
+    timezone: 'Pacific Time (PT) - San Francisco',
   });
-  const [profileErrors, setProfileErrors] = useState({});
-  const [profileSubmitting, setProfileSubmitting] = useState(false);
-  const [avatarSubmitting, setAvatarSubmitting] = useState(false);
-  const [profileError, setProfileError] = useState('');
   const [notifications, setNotifications] = useState({
-    newCustomers: true,
-    weeklySummary: true,
+    weekly: true,
+    deals: true,
     marketing: false,
   });
-
-  const [passwordValues, setPasswordValues] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmNewPassword: '',
-  });
-  const [passwordErrors, setPasswordErrors] = useState({});
-  const [passwordSubmitting, setPasswordSubmitting] = useState(false);
-  const [passwordError, setPasswordError] = useState('');
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    setProfileValues({
-      fullName: user?.fullName || '',
-      email: user?.email || '',
-      phone: user?.phone || '',
-      title: user?.title || '',
-      themePreference: user?.themePreference || 'light',
-      avatarUrl: user?.avatarUrl || null,
-    });
+    const name = splitName(user?.fullName || 'Alex Mercer');
+    setValues((current) => ({
+      ...current,
+      firstName: name.firstName,
+      lastName: name.lastName,
+      email: user?.email || current.email,
+      phone: user?.phone || current.phone,
+    }));
   }, [user]);
 
-  function resetProfileForm() {
-    setProfileValues({
-      fullName: user?.fullName || '',
-      email: user?.email || '',
-      phone: user?.phone || '',
-      title: user?.title || '',
-      themePreference: user?.themePreference || 'light',
-      avatarUrl: user?.avatarUrl || null,
-    });
-    setProfileErrors({});
-    setProfileError('');
-    showToast({
-      title: 'Changes discarded',
-      description: 'Profile fields were reset to the last saved version.',
-      type: 'info',
-    });
-  }
-
-  function handleProfileChange(event) {
+  function updateValue(event) {
     const { name, value } = event.target;
-    setProfileValues((current) => ({ ...current, [name]: value }));
-    setProfileErrors((current) => ({ ...current, [name]: '' }));
+    setValues((current) => ({ ...current, [name]: value }));
   }
 
-  function handlePasswordChange(event) {
-    const { name, value } = event.target;
-    setPasswordValues((current) => ({ ...current, [name]: value }));
-    setPasswordErrors((current) => ({ ...current, [name]: '' }));
-  }
-
-  function openAvatarPicker() {
-    if (avatarSubmitting || profileSubmitting) {
-      return;
-    }
-    avatarInputRef.current?.click();
-  }
-
-  async function persistAvatar(nextAvatarUrl) {
-    const nextValues = {
-      ...profileValues,
-      avatarUrl: nextAvatarUrl,
-    };
-
-    setProfileValues(nextValues);
-    setProfileError('');
-    setAvatarSubmitting(true);
-
+  async function saveChanges() {
+    setSaving(true);
     try {
-      await saveProfile(nextValues);
-      showToast({
-        title: nextAvatarUrl ? 'Avatar updated' : 'Avatar removed',
-        description: nextAvatarUrl ? 'Your new avatar was saved immediately.' : 'Your avatar was removed.',
-      });
-    } catch (error) {
-      setProfileError(error.response?.data?.message || 'Unable to update avatar right now.');
-      setProfileValues((current) => ({
-        ...current,
+      await saveProfile({
+        fullName: `${values.firstName} ${values.lastName}`.trim(),
+        email: values.email,
+        phone: values.phone,
+        title: 'Workspace Administrator',
+        themePreference: 'light',
         avatarUrl: user?.avatarUrl || null,
-      }));
-    } finally {
-      setAvatarSubmitting(false);
-    }
-  }
-
-  function removeAvatar() {
-    if (!profileValues.avatarUrl && !user?.avatarUrl) {
-      return;
-    }
-
-    void persistAvatar(null);
-  }
-
-  function handleAvatarChange(event) {
-    const file = event.target.files?.[0];
-
-    if (!file) {
-      return;
-    }
-
-    if (!file.type.startsWith('image/')) {
-      setProfileError('Please choose a valid image file for the avatar.');
-      event.target.value = '';
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      const nextAvatarUrl = typeof reader.result === 'string' ? reader.result : null;
-      if (!nextAvatarUrl) {
-        setProfileError('Unable to read the selected image.');
-        return;
-      }
-      void persistAvatar(nextAvatarUrl);
-    };
-    reader.readAsDataURL(file);
-    event.target.value = '';
-  }
-
-  async function submitProfile(event) {
-    event.preventDefault();
-    const validationErrors = validateProfile(profileValues);
-
-    if (Object.keys(validationErrors).length) {
-      setProfileErrors(validationErrors);
-      return;
-    }
-
-    setProfileSubmitting(true);
-    setProfileError('');
-    try {
-      const updatedUser = await saveProfile(profileValues);
+      });
       addActivityEntry({
         title: 'Profile updated',
-        description: 'Account details were saved successfully.',
+        description: 'Personal information and profile preferences were saved.',
       });
       addNotification({
         title: 'Profile saved',
-        message: `${updatedUser.fullName} profile information was updated successfully.`,
+        message: 'Your profile settings were updated.',
         path: '/profile',
       });
-      showToast({
-        title: 'Profile updated',
-        description: 'Your account settings have been saved.',
-      });
+      showToast({ title: 'Profile changes saved successfully' });
     } catch (error) {
-      setProfileError(error.response?.data?.message || 'Unable to save profile changes.');
-    } finally {
-      setProfileSubmitting(false);
-    }
-  }
-
-  async function submitPassword(event) {
-    event.preventDefault();
-    const validationErrors = validatePasswordChange(passwordValues);
-
-    if (Object.keys(validationErrors).length) {
-      setPasswordErrors(validationErrors);
-      return;
-    }
-
-    setPasswordSubmitting(true);
-    setPasswordError('');
-
-    try {
-      await updatePassword(passwordValues);
-      addActivityEntry({
-        title: 'Password updated',
-        description: 'The account password was changed from the profile page.',
-      });
-      addNotification({
-        title: 'Password changed',
-        message: 'Your password was updated successfully.',
-        path: '/profile',
-      });
       showToast({
-        title: 'Password changed',
-        description: 'Your credentials were updated successfully.',
+        title: 'Profile update failed',
+        description: error.response?.data?.message || 'Unable to save profile right now.',
+        type: 'error',
       });
-      setPasswordValues({
-        currentPassword: '',
-        newPassword: '',
-        confirmNewPassword: '',
-      });
-    } catch (error) {
-      setPasswordError(error.response?.data?.message || 'Unable to update password.');
     } finally {
-      setPasswordSubmitting(false);
+      setSaving(false);
     }
   }
 
   return (
-    <div className="space-y-6">
-      <PageHeader description="Manage your account details and preferences." title="Profile Settings" />
+    <div className="mx-auto max-w-[820px] space-y-6">
+      <div>
+        <p className="text-[11px] font-bold text-[#52627b]">Settings › Profile Settings</p>
+        <h1 className="mt-10 text-[24px] font-black tracking-[-0.05em] text-[#14213d]">Profile Settings</h1>
+        <p className="mt-1 text-[12px] font-medium text-[#52627b]">Manage your personal information, workspace preferences, and communication settings.</p>
+      </div>
 
-      <form className="space-y-6" onSubmit={submitProfile}>
-        <Card className="rounded-[18px]">
-          <h2 className="text-[24px] font-black text-[#1f2a44]">Public Profile</h2>
+      <div className="grid gap-6 lg:grid-cols-[230px_1fr]">
+        <div className="space-y-5">
+          <Card className="rounded-[9px] p-6 text-center">
+            <div className="mx-auto h-20 w-20">
+              <Avatar name={`${values.firstName} ${values.lastName}`} size="xl" src={user?.avatarUrl} />
+            </div>
+            <h2 className="mt-5 text-[14px] font-black text-[#14213d]">{values.firstName} {values.lastName}</h2>
+            <p className="mt-1 text-[11px] font-medium text-[#70809a]">{values.email}</p>
+            <span className="mt-4 inline-flex rounded-full bg-[#efe8ff] px-3 py-1 text-[10px] font-bold text-[#4c42e8]">
+              Administrator
+            </span>
+          </Card>
 
-          <div className="mt-6 grid gap-6 lg:grid-cols-[180px_1fr]">
-            <div className="flex flex-col items-start gap-4">
-              <button
-                className="group relative overflow-hidden rounded-full focus:outline-none focus:ring-4 focus:ring-[#dfe6ff]"
-                disabled={avatarSubmitting || profileSubmitting}
-                onClick={openAvatarPicker}
-                type="button"
-              >
-                <Avatar
-                  name={profileValues.fullName || user?.fullName}
-                  size="xl"
-                  src={profileValues.avatarUrl || user?.avatarUrl}
-                />
-                <span className="absolute inset-0 flex items-center justify-center bg-slate-950/0 text-xs font-semibold text-white transition group-hover:bg-slate-950/28">
-                  Edit
-                </span>
-              </button>
-              <input accept="image/*" className="hidden" onChange={handleAvatarChange} ref={avatarInputRef} type="file" />
-              <div className="flex w-full max-w-[260px] flex-col gap-2 sm:flex-row">
-                <Button
-                  className="min-w-[120px] justify-center"
-                  disabled={avatarSubmitting || profileSubmitting}
-                  isLoading={avatarSubmitting}
-                  onClick={openAvatarPicker}
-                  type="button"
-                  variant="secondary"
-                >
-                  <ImagePlus className="h-4 w-4" />
-                  Change
-                </Button>
-                <Button
-                  className="min-w-[120px] justify-center"
-                  disabled={avatarSubmitting || profileSubmitting || (!profileValues.avatarUrl && !user?.avatarUrl)}
-                  onClick={removeAvatar}
-                  type="button"
-                  variant="ghost"
-                >
-                  <Trash2 className="h-4 w-4" />
-                  Remove
-                </Button>
+          <Card className="rounded-[9px] p-5">
+            <h3 className="text-[11px] font-black uppercase tracking-[0.08em] text-[#52627b]">Workspace Details</h3>
+            <div className="mt-4 space-y-4 text-[11px]">
+              <div>
+                <p className="font-bold text-[#70809a]">Current Workspace</p>
+                <p className="mt-1 font-black text-[#14213d]">Acme Corporation</p>
               </div>
-              <p className="text-xs leading-5 text-[#7b86a0]">Click the avatar or use Change. It saves immediately after image selection.</p>
-            </div>
-
-            <div className="space-y-5">
-              <FormField error={profileErrors.fullName} htmlFor="fullName" label="Full Name">
-                <Input id="fullName" name="fullName" onChange={handleProfileChange} value={profileValues.fullName} />
-              </FormField>
-
-              <FormField htmlFor="title" label="Bio">
-                <Input
-                  as="textarea"
-                  id="title"
-                  name="title"
-                  onChange={handleProfileChange}
-                  rows={4}
-                  value={profileValues.title}
-                />
-              </FormField>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="rounded-[18px]">
-          <h2 className="text-[24px] font-black text-[#1f2a44]">Account Settings</h2>
-
-          <div className="mt-6 space-y-6">
-            <FormField error={profileErrors.email} htmlFor="email" label="Email Address">
-              <Input id="email" name="email" onChange={handleProfileChange} type="email" value={profileValues.email} />
-            </FormField>
-
-            <div className="grid gap-5 md:grid-cols-2">
-              <FormField htmlFor="phone" label="Phone">
-                <Input id="phone" name="phone" onChange={handleProfileChange} value={profileValues.phone} />
-              </FormField>
-              <FormField htmlFor="themePreference" label="Theme Preference">
-                <Input disabled id="themePreference" value={profileValues.themePreference || 'light'} />
-              </FormField>
-            </div>
-
-            <div className="border-t border-[var(--border)] pt-6">
-              <p className="mb-4 text-sm font-bold uppercase tracking-[0.1em] text-[#8d97ad]">Notifications</p>
-              <div className="space-y-3">
-                {[
-                  { key: 'newCustomers', label: 'Email me when a new customer signs up' },
-                  { key: 'weeklySummary', label: 'Weekly summary reports' },
-                  { key: 'marketing', label: 'Marketing and promotional emails' },
-                ].map((item) => (
-                  <label className="flex items-center gap-3 text-sm text-[#56627b]" key={item.key}>
-                    <input
-                      checked={notifications[item.key]}
-                      className="h-4 w-4 rounded border-[var(--border)] accent-[#4c42e8]"
-                      onChange={() =>
-                        setNotifications((current) => ({
-                          ...current,
-                          [item.key]: !current[item.key],
-                        }))
-                      }
-                      type="checkbox"
-                    />
-                    <span>{item.label}</span>
-                  </label>
-                ))}
+              <div>
+                <p className="font-bold text-[#70809a]">Current Plan</p>
+                <p className="mt-1 font-black text-[#14213d]">Enterprise Plus</p>
+              </div>
+              <div>
+                <div className="mb-1 flex justify-between font-bold text-[#70809a]">
+                  <span>Storage Used</span>
+                  <span>458GB / 100GB</span>
+                </div>
+                <div className="h-1.5 rounded-full bg-[#e0e7fb]">
+                  <div className="h-full w-[78%] rounded-full bg-[#4c42e8]" />
+                </div>
               </div>
             </div>
-          </div>
-        </Card>
-
-        {profileError ? <div className="rounded-[16px] bg-[#fff1ee] px-4 py-3 text-sm text-[#ec6a60]">{profileError}</div> : null}
-
-        <div className="flex justify-end gap-3">
-          <Button onClick={resetProfileForm} type="button" variant="ghost">
-            Cancel
-          </Button>
-          <Button isLoading={profileSubmitting} type="submit">
-            Save Changes
-          </Button>
+          </Card>
         </div>
-      </form>
 
-      <Card className="rounded-[18px]">
-        <h2 className="text-[24px] font-black text-[#1f2a44]">Password</h2>
-        <form className="mt-6 space-y-5" onSubmit={submitPassword}>
-          <div className="grid gap-5 md:grid-cols-2">
-            <FormField error={passwordErrors.currentPassword} htmlFor="currentPassword" label="Current Password">
-              <Input id="currentPassword" name="currentPassword" onChange={handlePasswordChange} type="password" value={passwordValues.currentPassword} />
-            </FormField>
-            <FormField error={passwordErrors.newPassword} htmlFor="newPassword" label="New Password">
-              <Input id="newPassword" name="newPassword" onChange={handlePasswordChange} type="password" value={passwordValues.newPassword} />
-            </FormField>
-          </div>
+        <div className="space-y-5">
+          <Card className="rounded-[9px] p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-[15px] font-black text-[#14213d]">Personal Information</h2>
+                <p className="mt-1 text-[11px] text-[#70809a]">Update your personal details and public profile.</p>
+              </div>
+              <Button isLoading={saving} onClick={saveChanges}>Save Changes</Button>
+            </div>
+            <div className="mt-6 grid gap-5 md:grid-cols-2">
+              <FormField htmlFor="firstName" label="First Name">
+                <Input id="firstName" name="firstName" onChange={updateValue} value={values.firstName} />
+              </FormField>
+              <FormField htmlFor="lastName" label="Last Name">
+                <Input id="lastName" name="lastName" onChange={updateValue} value={values.lastName} />
+              </FormField>
+              <FormField htmlFor="email" label="Email Address">
+                <Input id="email" name="email" onChange={updateValue} value={values.email} />
+              </FormField>
+              <FormField htmlFor="phone" label="Phone Number">
+                <Input id="phone" name="phone" onChange={updateValue} value={values.phone} />
+              </FormField>
+              <div className="md:col-span-2">
+                <FormField htmlFor="bio" label="Professional Bio">
+                  <Input as="textarea" id="bio" name="bio" onChange={updateValue} rows={4} value={values.bio} />
+                </FormField>
+              </div>
+              <div className="md:col-span-2">
+                <FormField htmlFor="timezone" label="Timezone">
+                  <Input id="timezone" name="timezone" onChange={updateValue} value={values.timezone} />
+                </FormField>
+              </div>
+            </div>
+          </Card>
 
-          <FormField error={passwordErrors.confirmNewPassword} htmlFor="confirmNewPassword" label="Confirm New Password">
-            <Input
-              id="confirmNewPassword"
-              name="confirmNewPassword"
-              onChange={handlePasswordChange}
-              type="password"
-              value={passwordValues.confirmNewPassword}
-            />
-          </FormField>
+          <Card className="rounded-[9px] p-6">
+            <h2 className="text-[15px] font-black text-[#14213d]">Email Preferences</h2>
+            <p className="mt-1 text-[11px] text-[#70809a]">Manage which notifications you receive to your primary email.</p>
+            <div className="mt-7 space-y-7">
+              {[
+                ['weekly', 'Weekly Digest', 'Receive a weekly summary of your workspace activity and key metrics.'],
+                ['deals', 'Deal Status Updates', 'Get notified immediately when a high-value deal changes stages.'],
+                ['marketing', 'Marketing Communications', 'Tips, tricks, and product announcements from the Controllusion team.'],
+              ].map(([key, title, description]) => (
+                <div className="flex items-center justify-between gap-4" key={key}>
+                  <div>
+                    <p className="text-[12px] font-black text-[#14213d]">{title}</p>
+                    <p className="mt-1 text-[11px] text-[#70809a]">{description}</p>
+                  </div>
+                  <Toggle checked={notifications[key]} onChange={() => setNotifications((current) => ({ ...current, [key]: !current[key] }))} />
+                </div>
+              ))}
+            </div>
+          </Card>
 
-          {passwordError ? <div className="rounded-[16px] bg-[#fff1ee] px-4 py-3 text-sm text-[#ec6a60]">{passwordError}</div> : null}
-
-          <div className="flex justify-end">
-            <Button isLoading={passwordSubmitting} type="submit" variant="secondary">
-              Update Password
-            </Button>
-          </div>
-        </form>
-      </Card>
+          <Card className="rounded-[9px] border-[#ffe2e2] bg-[#fffafa] p-6">
+            <h2 className="text-[15px] font-black text-[#e11d48]">Danger Zone</h2>
+            <div className="mt-5 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <ShieldCheck className="h-4 w-4 text-[#e11d48]" />
+                <div>
+                  <p className="text-[12px] font-black text-[#14213d]">Delete Account</p>
+                  <p className="text-[11px] text-[#70809a]">Once you delete your account, there is no going back.</p>
+                </div>
+              </div>
+              <Button variant="danger">Deactivate Account</Button>
+            </div>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }

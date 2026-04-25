@@ -5,7 +5,7 @@ const Select = forwardRef(function Select({ className, error = false, children, 
   return (
     <select
       className={cx(
-        'field-shell h-[42px] w-full appearance-none px-4 py-3 text-sm font-medium text-[var(--text)]',
+        'field-shell h-[36px] w-full appearance-none px-3 py-2 text-xs font-medium text-[var(--text)]',
         'transition focus:border-[#cfd7ff] focus:ring-4 focus:ring-[#eef2ff]',
         error ? 'border-rose-300 focus:ring-rose-100' : 'border-[color:var(--border)]',
         className,

@@ -6,10 +6,10 @@ const Input = forwardRef(function Input(
   ref,
 ) {
   const sharedClassName = cx(
-    'field-shell w-full px-4 py-3 text-sm font-medium text-[var(--text)] placeholder:text-[color:var(--text-muted)]',
+    'field-shell w-full px-3 py-2 text-xs font-medium text-[var(--text)] placeholder:text-[#a4afc4]',
     'transition focus:border-[#cfd7ff] focus:ring-4 focus:ring-[#eef2ff]',
     error ? 'border-rose-300 focus:ring-rose-100' : 'border-[color:var(--border)]',
-    as === 'textarea' ? 'min-h-[132px] resize-y py-3.5' : 'h-[42px]',
+    as === 'textarea' ? 'min-h-[120px] resize-y py-3' : 'h-[36px]',
     className,
   );
 

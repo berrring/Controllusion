@@ -18,10 +18,10 @@ function DataTable({
 
   return (
     <>
-      <div className="hidden overflow-hidden rounded-[24px] border border-[color:var(--border)] bg-white shadow-[0_22px_44px_-36px_rgba(17,24,39,0.16)] lg:block">
+      <div className="hidden overflow-hidden rounded-[18px] border border-[color:var(--border)] bg-white shadow-[0_18px_40px_-34px_rgba(31,42,68,0.12)] lg:block">
         <div className="overflow-x-auto scrollbar-thin">
           <table className="min-w-full">
-            <thead className="bg-[#f8f9fc]">
+            <thead className="bg-[#f6f8ff]">
               <tr>
                 {onToggleRow ? (
                   <th className="px-5 py-4 text-left">
@@ -30,7 +30,7 @@ function DataTable({
                 ) : null}
                 {columns.map((column) => (
                   <th
-                    className="px-5 py-4 text-left text-[11px] font-extrabold uppercase tracking-[0.14em] text-slate-500"
+                    className="px-5 py-4 text-left text-[11px] font-bold uppercase tracking-[0.12em] text-[#8d97ad]"
                     key={column.key}
                   >
                     {column.label}
@@ -40,14 +40,14 @@ function DataTable({
             </thead>
             <tbody className="divide-y divide-[color:var(--border)]">
               {data.map((item) => (
-                <tr className="transition hover:bg-slate-50/70" key={item.id}>
+                <tr className="transition hover:bg-[#fbfcff]" key={item.id}>
                   {onToggleRow ? (
                     <td className="px-5 py-4">
                       <input checked={selectedIds.includes(item.id)} onChange={() => onToggleRow(item.id)} type="checkbox" />
                     </td>
                   ) : null}
                   {columns.map((column) => (
-                    <td className="px-5 py-4 align-top text-sm text-slate-700" key={column.key}>
+                    <td className="px-5 py-4 align-top text-sm text-[#56627b]" key={column.key}>
                       {column.render(item)}
                     </td>
                   ))}

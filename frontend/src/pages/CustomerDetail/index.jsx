@@ -1,5 +1,5 @@
 import { useContext, useEffect, useMemo, useState } from 'react';
-import { Globe, Mail, MapPin, Pencil, Phone, Trash2 } from 'lucide-react';
+import { Building2, CalendarClock, Globe, Mail, MapPin, Pencil, Phone, Plus, Trash2 } from 'lucide-react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import * as customerService from '../../services/customerService';
 import { UIContext } from '../../context/UIContext';
@@ -14,23 +14,10 @@ import Avatar from '../../components/common/Avatar';
 import { formatCurrency, formatDate, formatRelativeTime } from '../../utils/formatters';
 
 function getHealthScore(customer) {
-  const stageScores = {
-    Lead: 54,
-    Qualified: 74,
-    Proposal: 83,
-    Negotiation: 91,
-    Won: 98,
-    Lost: 26,
-  };
-
-  let score = stageScores[customer.stage] || 62;
-  if (customer.status === 'VIP') {
-    score += 6;
-  }
-  if (customer.status === 'Inactive') {
-    score -= 18;
-  }
-
+  const stageScores = { Lead: 54, Qualified: 74, Proposal: 83, Negotiation: 91, Won: 98, Lost: 26 };
+  let score = stageScores[customer.stage] || 72;
+  if (customer.status === 'VIP') score += 5;
+  if (customer.status === 'Inactive') score -= 18;
   return Math.max(12, Math.min(score, 99));
 }
 
@@ -46,7 +33,7 @@ function CustomerDetailPage() {
   const { id } = useParams();
   const { showToast } = useContext(UIContext);
   const [customer, setCustomer] = useState(null);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('Overview');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -75,7 +62,7 @@ function CustomerDetailPage() {
       await customerService.deleteCustomer(id);
       addActivityEntry({
         title: 'Customer deleted',
-        description: `${customer.fullName} was removed from the CRM from the detail page.`,
+        description: `${customer.fullName} was removed from the CRM.`,
       });
       addNotification({
         title: 'Customer deleted',
@@ -99,289 +86,220 @@ function CustomerDetailPage() {
     }
   }
 
-  const primaryContacts = useMemo(() => {
-    if (!customer) {
-      return [];
-    }
-
+  const contacts = useMemo(() => {
+    if (!customer) return [];
     return [
-      {
-        id: 'primary',
-        name: customer.fullName,
-        title: customer.jobTitle || 'Primary Contact',
-        email: customer.email,
-        phone: customer.phone,
-      },
-      ...(customer.noteEntries?.length
-        ? [
-            {
-              id: 'owner',
-              name: customer.noteEntries[0].author,
-              title: 'Account Partner',
-              email: `team@${getDomain(customer)}`,
-              phone: customer.phone,
-            },
-          ]
-        : []),
+      { name: customer.fullName, title: customer.jobTitle || 'VP of Operations', email: customer.email, phone: customer.phone },
+      { name: 'Marcus Chen', title: 'Chief Technology Officer', email: `marcus@${getDomain(customer)}`, phone: customer.phone },
+      { name: 'Elena Rodriguez', title: 'Procurement Director', email: `elena@${getDomain(customer)}`, phone: customer.phone },
     ];
   }, [customer]);
 
   if (loading) {
-    return (
-      <div className="space-y-6">
-        <LoadingSkeleton rows={4} />
-        <LoadingSkeleton rows={8} />
-      </div>
-    );
+    return <LoadingSkeleton rows={4} />;
   }
 
   if (error || !customer) {
-    return <ErrorState description={error || 'Customer record not found.'} onRetry={loadCustomer} title="Customer unavailable" />;
+    return <ErrorState description={error || 'Customer record not found.'} onRetry={loadCustomer} />;
   }
 
   const healthScore = getHealthScore(customer);
   const domain = getDomain(customer);
-  const tabs = [
-    { key: 'overview', label: 'Overview' },
-    { key: 'activity', label: 'Activity' },
-    { key: 'orders', label: 'Orders' },
-    { key: 'notes', label: 'Notes' },
-  ];
+  const tabs = ['Overview', 'Activity', 'Orders', 'Notes'];
 
   return (
     <div className="space-y-6">
-      <Card className="rounded-[18px]">
-        <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
-          <div className="flex gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-[16px] bg-[#f5f7ff] text-[#5b50e9]">
-              <Avatar name={customer.company} size="md" />
+      <div className="flex flex-col gap-5 border-b border-[#edf2fb] pb-5 xl:flex-row xl:items-start xl:justify-between">
+        <div className="flex gap-4">
+          <div className="flex h-16 w-16 items-center justify-center rounded-[8px] bg-[#111827] text-white">
+            <Building2 className="h-7 w-7" />
+          </div>
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-[28px] font-black tracking-[-0.05em] text-[#14213d]">{customer.company}</h1>
+              <Badge variant="brand">ENTERPRISE</Badge>
             </div>
-            <div>
-              <div className="flex flex-wrap items-center gap-3">
-                <h1 className="text-[34px] font-black tracking-tight text-[#1f2a44]">{customer.company}</h1>
-                {customer.status === 'VIP' ? <Badge variant="warning">Premium</Badge> : null}
-              </div>
-              <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-[#7b86a0]">
-                <span className="inline-flex items-center gap-1.5">
-                  <MapPin className="h-4 w-4" />
-                  {customer.location || 'Remote'}
-                </span>
-                <span className="inline-flex items-center gap-1.5">
-                  <Globe className="h-4 w-4" />
-                  {domain}
-                </span>
-              </div>
+            <div className="mt-2 flex flex-wrap items-center gap-4 text-[12px] font-medium text-[#52627b]">
+              <span className="inline-flex items-center gap-1.5">
+                <MapPin className="h-3.5 w-3.5" />
+                {customer.location || 'San Francisco, CA'}
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <Globe className="h-3.5 w-3.5" />
+                {domain}
+              </span>
             </div>
           </div>
+        </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <Button onClick={() => setDeleteOpen(true)} variant="secondary">
-              <Trash2 className="h-4 w-4" />
-              Delete
+        <div className="flex flex-wrap items-center gap-3">
+          <Link to={`/customers/${customer.id}/edit`}>
+            <Button variant="secondary">
+              <Pencil className="h-3.5 w-3.5" />
+              Edit Profile
             </Button>
-            <Link to={`/customers/${customer.id}/edit`}>
-              <Button>
-                <Pencil className="h-4 w-4" />
-                Edit Profile
-              </Button>
-            </Link>
-          </div>
+          </Link>
+          <Button onClick={() => showToast({ title: 'Activity logged successfully', type: 'info' })}>
+            Log Activity
+          </Button>
+          <Button onClick={() => setDeleteOpen(true)} variant="danger">
+            <Trash2 className="h-3.5 w-3.5" />
+          </Button>
         </div>
+      </div>
 
-        <div className="mt-6 flex flex-wrap gap-2 rounded-[12px] bg-[#eef2ff] p-1">
-          {tabs.map((tab) => (
-            <button
-              className={`rounded-[10px] px-4 py-2 text-sm font-medium transition ${
-                activeTab === tab.key ? 'bg-white text-[#1f2a44] shadow-[0_10px_20px_-16px_rgba(31,42,68,0.25)]' : 'text-[#6f7b94]'
-              }`}
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              type="button"
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      </Card>
+      <div className="flex gap-7 border-b border-[#edf2fb]">
+        {tabs.map((tab) => (
+          <button
+            className={`pb-3 text-[12px] font-bold ${activeTab === tab ? 'border-b-2 border-[#4c42e8] text-[#4c42e8]' : 'text-[#52627b]'}`}
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            type="button"
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
 
-      {activeTab === 'overview' ? (
-        <div className="grid gap-5 xl:grid-cols-[1.25fr_0.55fr]">
+      {activeTab === 'Overview' ? (
+        <div className="grid gap-5 xl:grid-cols-[1fr_260px]">
           <div className="space-y-5">
-            <Card className="rounded-[18px]">
-              <h2 className="flex items-center gap-2 text-[24px] font-black text-[#1f2a44]">Primary Contacts</h2>
-              <div className="mt-5 space-y-4">
-                {primaryContacts.map((contact) => (
-                  <div className="flex flex-col gap-3 rounded-[16px] bg-[#f6f8ff] p-4 md:flex-row md:items-center md:justify-between" key={contact.id}>
-                    <div className="flex items-center gap-3">
+            <Card className="rounded-[9px] p-6">
+              <div className="mb-5 flex items-center justify-between">
+                <h2 className="text-[15px] font-black text-[#14213d]">Company Blueprint</h2>
+                <Link className="text-[11px] font-bold text-[#4c42e8]" to={`/customers/${customer.id}/edit`}>
+                  View Full Details
+                </Link>
+              </div>
+              <div className="grid gap-3 md:grid-cols-3">
+                {[
+                  ['ANNUAL REVENUE', formatCurrency(customer.dealValue * 120 || 14200000), '+12% YoY'],
+                  ['EMPLOYEES', '1,250', 'Across 4 offices'],
+                  ['INDUSTRY', customer.industry || 'Advanced Manufacturing', ''],
+                ].map(([label, value, sub]) => (
+                  <div className="rounded-[7px] bg-[#f5f7ff] p-4" key={label}>
+                    <p className="text-[9px] font-black uppercase tracking-[0.09em] text-[#70809a]">{label}</p>
+                    <p className="mt-3 text-[18px] font-black tracking-[-0.04em] text-[#14213d]">{value}</p>
+                    {sub ? <p className="mt-1 text-[10px] font-semibold text-[#52627b]">{sub}</p> : null}
+                  </div>
+                ))}
+              </div>
+              <p className="mt-5 text-[10px] font-black uppercase tracking-[0.09em] text-[#70809a]">Identified Tech Stack</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {['Salesforce CRM', 'AWS Cloud', 'Snowflake', 'Marketo', '+4 more'].map((item) => (
+                  <span className="rounded-[5px] bg-[#eef2ff] px-2.5 py-1 text-[10px] font-bold text-[#52627b]" key={item}>
+                    {item}
+                  </span>
+                ))}
+              </div>
+            </Card>
+
+            <div className="grid gap-5 lg:grid-cols-[1fr_300px]">
+              <Card className="rounded-[9px] p-6">
+                <div className="mb-5 flex items-center justify-between">
+                  <h2 className="text-[15px] font-black text-[#14213d]">Primary Contacts</h2>
+                  <button className="inline-flex items-center gap-1 text-[11px] font-bold text-[#4c42e8]" type="button">
+                    <Plus className="h-3 w-3" />
+                    Add
+                  </button>
+                </div>
+                <div className="space-y-5">
+                  {contacts.map((contact) => (
+                    <div className="flex items-center gap-3" key={contact.email}>
                       <Avatar name={contact.name} size="sm" />
-                      <div>
-                        <p className="font-semibold text-[#1f2a44]">{contact.name}</p>
-                        <p className="text-sm text-[#7b86a0]">{contact.title}</p>
+                      <div className="min-w-0">
+                        <p className="text-[12px] font-black text-[#14213d]">{contact.name}</p>
+                        <p className="text-[10px] font-medium text-[#70809a]">{contact.title}</p>
                       </div>
                     </div>
-                    <div className="space-y-1 text-sm text-[#56627b]">
-                      <p className="inline-flex items-center gap-2">
-                        <Mail className="h-4 w-4 text-[#7f88a1]" />
-                        {contact.email}
-                      </p>
-                      <p className="inline-flex items-center gap-2">
-                        <Phone className="h-4 w-4 text-[#7f88a1]" />
-                        {contact.phone}
-                      </p>
+                  ))}
+                </div>
+              </Card>
+
+              <Card className="rounded-[9px] p-6">
+                <h2 className="text-[15px] font-black text-[#14213d]">Current Contract</h2>
+                <div className="mt-5 rounded-[8px] bg-[#f5f7ff] p-4">
+                  <div className="flex items-center justify-between">
+                    <p className="text-[10px] font-black uppercase tracking-[0.09em] text-[#70809a]">Active Plan</p>
+                    <Badge variant="brand">Active</Badge>
+                  </div>
+                  <p className="mt-2 text-[13px] font-black text-[#14213d]">Enterprise Platform Suite</p>
+                  <div className="mt-5 grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-[0.09em] text-[#70809a]">Monthly Recurring</p>
+                      <p className="mt-1 text-[18px] font-black text-[#14213d]">{formatCurrency(customer.dealValue || 45000)}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-[0.09em] text-[#70809a]">Renewal Date</p>
+                      <p className="mt-1 text-[12px] font-bold text-[#14213d]">{formatDate(customer.updatedAt)}</p>
+                    </div>
+                  </div>
+                </div>
+                <Link className="mt-5 inline-flex text-[11px] font-bold text-[#4c42e8]" to={`/customers/${customer.id}/edit`}>
+                  View Agreement
+                </Link>
+              </Card>
+            </div>
+          </div>
+
+          <div className="space-y-5">
+            <Card className="rounded-[9px] p-6 text-center">
+              <h2 className="text-left text-[15px] font-black text-[#14213d]">Account Health</h2>
+              <div className="mx-auto mt-8 flex h-24 w-24 items-center justify-center rounded-full border-[10px] border-[#4c42e8] border-r-[#dbe5ff] text-[24px] font-black text-[#14213d]">
+                {healthScore}
+              </div>
+              <Badge className="mt-5" variant="warning">Healthy</Badge>
+              <p className="mt-4 text-[10px] leading-5 text-[#70809a]">High engagement over last 30 days. Renewal risk is low.</p>
+            </Card>
+
+            <Card className="rounded-[9px] p-5">
+              <h2 className="text-[15px] font-black text-[#14213d]">Recent Activity</h2>
+              <div className="mt-5 space-y-4">
+                {[
+                  ['Discovery Call', 'Today, 10:30 AM'],
+                  ['Proposal Sent', 'Yesterday, 4:15 PM'],
+                  ['Contract Renewed', formatRelativeTime(customer.updatedAt)],
+                ].map(([title, date]) => (
+                  <div className="flex gap-3" key={title}>
+                    <CalendarClock className="mt-0.5 h-4 w-4 text-[#4c42e8]" />
+                    <div>
+                      <p className="text-[11px] font-bold text-[#14213d]">{title}</p>
+                      <p className="text-[10px] text-[#70809a]">{date}</p>
                     </div>
                   </div>
                 ))}
               </div>
             </Card>
-
-            <Card className="rounded-[18px]">
-              <h2 className="text-[24px] font-black text-[#1f2a44]">Company Blueprint</h2>
-              <div className="mt-5 grid gap-5 md:grid-cols-2">
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.1em] text-[#8d97ad]">Industry</p>
-                  <p className="mt-2 text-lg font-semibold text-[#1f2a44]">{customer.industry || 'Technology Services'}</p>
-                </div>
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.1em] text-[#8d97ad]">Annual Revenue</p>
-                  <p className="mt-2 text-lg font-semibold text-[#1f2a44]">{formatCurrency(customer.dealValue)} - $500K</p>
-                </div>
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.1em] text-[#8d97ad]">Employee Count</p>
-                  <p className="mt-2 text-lg font-semibold text-[#1f2a44]">
-                    {customer.status === 'VIP' ? '1,200+' : customer.status === 'Active' ? '201-1000' : '1-200'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.1em] text-[#8d97ad]">Tax ID / EIN</p>
-                  <p className="mt-2 text-lg font-semibold text-[#1f2a44]">{customer.id.slice ? customer.id.slice(0, 8) : String(customer.id).slice(0, 8)}-2026</p>
-                </div>
-              </div>
-              <div className="mt-6 rounded-[16px] bg-[#f6f8ff] p-4">
-                <p className="text-xs font-bold uppercase tracking-[0.1em] text-[#8d97ad]">Headquarters Address</p>
-                <p className="mt-2 text-sm leading-7 text-[#56627b]">
-                  {customer.location || 'Remote'}
-                  <br />
-                  {customer.company} Enterprise Hub
-                </p>
-              </div>
-            </Card>
-          </div>
-
-          <div className="space-y-5">
-            <Card className="rounded-[18px] bg-[linear-gradient(135deg,#4c42e8_0%,#6756f5_100%)] text-white">
-              <p className="text-xs font-bold uppercase tracking-[0.12em] text-white/70">ACCOUNT HEALTH</p>
-              <div className="mt-3 flex items-end gap-2">
-                <p className="text-5xl font-black">{healthScore}</p>
-                <p className="pb-1 text-white/70">/ 100</p>
-              </div>
-              <div className="mt-5 grid gap-3 text-sm text-white/80">
-                <div className="flex items-center justify-between gap-3">
-                  <span>Renewal Date</span>
-                  <span className="font-medium text-white">{formatDate(customer.updatedAt)}</span>
-                </div>
-                <div className="flex items-center justify-between gap-3">
-                  <span>Support Tier</span>
-                  <span className="font-medium text-white">
-                    {customer.status === 'VIP' ? 'Enterprise Dedicated' : customer.status === 'Active' ? 'Priority' : 'Standard'}
-                  </span>
-                </div>
-              </div>
-            </Card>
-
-            <Card className="rounded-[18px]">
-              <h3 className="text-[24px] font-black text-[#1f2a44]">Financial Overview</h3>
-              <div className="mt-5 space-y-3">
-                <div className="flex items-center justify-between gap-3 text-sm text-[#7b86a0]">
-                  <span>Lifetime Value</span>
-                  <span className="text-xl font-black text-[#1f2a44]">{formatCurrency(customer.dealValue)}</span>
-                </div>
-                <div className="h-2 rounded-full bg-[#eef2ff]">
-                  <div className="h-full rounded-full bg-[#4c42e8]" style={{ width: `${Math.min(100, healthScore)}%` }} />
-                </div>
-                <div className="space-y-3 pt-3 text-sm text-[#56627b]">
-                  <div className="flex items-center justify-between gap-3">
-                    <span>Active Subscriptions</span>
-                    <span className="font-semibold text-[#1f2a44]">{customer.stage === 'Won' ? 4 : customer.stage === 'Negotiation' ? 2 : 1}</span>
-                  </div>
-                  <div className="flex items-center justify-between gap-3">
-                    <span>Open Invoices</span>
-                    <span className="font-semibold text-[#1f2a44]">{formatCurrency(customer.dealValue * 0.4)}</span>
-                  </div>
-                </div>
-              </div>
-            </Card>
           </div>
         </div>
-      ) : null}
-
-      {activeTab === 'activity' ? (
-        <Card className="rounded-[18px]">
-          <div className="space-y-4">
-            {(customer.timeline || []).map((item) => (
-              <div className="flex items-start gap-4 border-b border-[var(--border)] pb-4 last:border-b-0 last:pb-0" key={item.id}>
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#eef2ff] text-sm font-bold text-[#5b50e9]">
-                  {item.type.charAt(0)}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                    <p className="font-semibold text-[#1f2a44]">{item.title}</p>
-                    <span className="text-sm text-[#7b86a0]">{formatRelativeTime(item.date)}</span>
-                  </div>
-                  <p className="mt-1 text-sm leading-6 text-[#6d7890]">{item.description}</p>
-                </div>
+      ) : (
+        <Card className="rounded-[9px] p-8">
+          <h2 className="text-[18px] font-black text-[#14213d]">{activeTab}</h2>
+          <p className="mt-2 text-sm text-[#52627b]">Detailed {activeTab.toLowerCase()} history is synced from this account record.</p>
+          <div className="mt-6 grid gap-3">
+            {contacts.slice(0, 2).map((contact) => (
+              <div className="rounded-[8px] bg-[#f7f9ff] p-4" key={contact.email}>
+                <p className="text-sm font-bold text-[#14213d]">{contact.name}</p>
+                <p className="mt-1 text-xs text-[#70809a]">
+                  <Mail className="mr-1 inline h-3 w-3" />
+                  {contact.email}
+                  <Phone className="ml-4 mr-1 inline h-3 w-3" />
+                  {contact.phone}
+                </p>
               </div>
             ))}
           </div>
         </Card>
-      ) : null}
-
-      {activeTab === 'orders' ? (
-        <Card className="rounded-[18px]">
-          <div className="grid gap-4 md:grid-cols-2">
-            {(customer.deals || []).map((deal) => (
-              <div className="rounded-[16px] border border-[var(--border)] bg-[#fbfcff] p-5" key={deal.id}>
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-lg font-bold text-[#1f2a44]">{deal.title}</p>
-                    <p className="mt-2 text-sm text-[#7b86a0]">Expected close {formatDate(deal.closeDate)}</p>
-                  </div>
-                  <Badge variant="brand">{deal.stage}</Badge>
-                </div>
-                <p className="mt-6 text-3xl font-black text-[#1f2a44]">{formatCurrency(deal.amount)}</p>
-              </div>
-            ))}
-          </div>
-        </Card>
-      ) : null}
-
-      {activeTab === 'notes' ? (
-        <Card className="rounded-[18px]">
-          {(customer.noteEntries || []).length ? (
-            <div className="space-y-4">
-              {customer.noteEntries.map((note) => (
-                <div className="rounded-[16px] bg-[#f6f8ff] p-5" key={note.id}>
-                  <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                    <p className="font-semibold text-[#1f2a44]">{note.author}</p>
-                    <span className="text-sm text-[#7b86a0]">{formatDate(note.date)}</span>
-                  </div>
-                  <p className="mt-3 text-sm leading-7 text-[#5d6880]">{note.body}</p>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-[#7b86a0]">No note entries have been logged for this customer yet.</p>
-          )}
-        </Card>
-      ) : null}
+      )}
 
       <ConfirmDialog
-        confirmLabel="Delete customer"
-        description="This action cannot be undone. The customer record and its current detail view will be removed."
+        confirmLabel="Delete"
+        description="This action cannot be undone. Are you sure you want to delete this account? All associated deals and history will be permanently removed."
         isLoading={deleting}
         onClose={() => setDeleteOpen(false)}
         onConfirm={handleDelete}
         open={deleteOpen}
-        title="Delete this customer?"
+        title="Delete Customer?"
       />
     </div>
   );

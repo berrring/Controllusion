@@ -1,20 +1,27 @@
+import { AlertCircle, RotateCw } from 'lucide-react';
 import Button from '../ui/Button';
 
 function ErrorState({ title = 'Something went wrong', description, onRetry }) {
   return (
-    <div className="rounded-[18px] border border-[var(--border)] bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] p-8 text-center shadow-[0_18px_40px_-34px_rgba(31,42,68,0.12)]">
-      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-[18px] bg-[#fff1ee] text-[#ec6a60]">
-        <span className="text-lg font-black">!</span>
-      </div>
-      <h3 className="mt-5 text-[22px] font-black tracking-[-0.03em] text-[#1f2a44]">{title}</h3>
-      <p className="mx-auto mt-2 max-w-lg text-sm leading-7 text-[#6d7890]">{description}</p>
-      {onRetry ? (
-        <div className="mt-6">
-          <Button onClick={onRetry} variant="secondary">
-            Try again
-          </Button>
+    <div className="flex min-h-[540px] items-center justify-center rounded-[12px] bg-transparent p-6">
+      <div className="w-full max-w-[420px] rounded-[14px] bg-white px-9 py-10 text-center shadow-[0_28px_70px_-44px_rgba(31,42,68,0.35)]">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#fff0ee] text-[#ef4e4e] ring-8 ring-[#fff6f4]">
+          <AlertCircle className="h-8 w-8" />
         </div>
-      ) : null}
+        <h3 className="mt-7 text-[26px] font-black tracking-[-0.04em] text-[#17223b]">{title}</h3>
+        <p className="mx-auto mt-4 max-w-[310px] text-[14px] leading-7 text-[#67758e]">
+          {description || 'We encountered an unexpected issue while trying to process your request. Please try refreshing the page.'}
+        </p>
+        {onRetry ? (
+          <div className="mt-7">
+            <Button onClick={onRetry}>
+              <RotateCw className="h-4 w-4" />
+              Refresh Page
+            </Button>
+          </div>
+        ) : null}
+        <p className="mt-6 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#ec6a60]">ERR_500_INT</p>
+      </div>
     </div>
   );
 }

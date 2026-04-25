@@ -1,74 +1,45 @@
 import { useContext, useEffect, useState } from 'react';
-import {
-  CircleDollarSign,
-  FilePlus2,
-  Percent,
-  Plus,
-  RefreshCw,
-  Target,
-  TrendingUp,
-  Users,
-} from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
+import { CircleDollarSign, Percent, Target, TrendingUp, Users } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { getDashboardSummary } from '../../services/dashboardService';
 import { UIContext } from '../../context/UIContext';
-import { addActivityEntry, addNotification } from '../../services/storage';
 import LoadingSkeleton from '../../components/common/LoadingSkeleton';
 import ErrorState from '../../components/common/ErrorState';
-import EmptyState from '../../components/common/EmptyState';
-import PageHeader from '../../components/common/PageHeader';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import { formatCurrency, formatRelativeTime } from '../../utils/formatters';
 
-const CARD_META = [
-  {
-    key: 'pipelineValue',
-    label: 'TOTAL REVENUE',
-    change: '+12.5%',
-    changeTone: 'text-[#ef7c47]',
-    icon: CircleDollarSign,
-  },
-  {
-    key: 'totalCustomers',
-    label: 'ACTIVE CUSTOMERS',
-    change: '+4.2%',
-    changeTone: 'text-[#ef7c47]',
-    icon: Users,
-  },
-  {
-    key: 'activeDeals',
-    label: 'NEW LEADS',
-    change: '-1.8%',
-    changeTone: 'text-[#ec6a60]',
-    icon: Target,
-  },
-  {
-    key: 'conversionRate',
-    label: 'CONVERSION RATE',
-    change: '+0.6%',
-    changeTone: 'text-[#ef7c47]',
-    icon: Percent,
-    suffix: '%',
-  },
+const metrics = [
+  { key: 'pipelineValue', label: 'TOTAL REVENUE', icon: CircleDollarSign, change: '+12.5% vs last month' },
+  { key: 'totalCustomers', label: 'ACTIVE CUSTOMERS', icon: Users, change: '+5.2% vs last month' },
+  { key: 'activeDeals', label: 'NEW LEADS', icon: Target, change: '-1.4% vs last month' },
+  { key: 'conversionRate', label: 'CONVERSION RATE', icon: Percent, change: '+2.1% vs last month' },
 ];
 
-function DashboardMetricCard({ label, value, change, changeTone, icon: Icon }) {
+const fallbackBars = [
+  { name: 'JAN', revenue: 38 },
+  { name: 'FEB', revenue: 56 },
+  { name: 'MAR', revenue: 42 },
+  { name: 'APR', revenue: 74 },
+  { name: 'MAY', revenue: 69 },
+  { name: 'JUN', revenue: 92 },
+];
+
+function MetricCard({ item, value }) {
+  const Icon = item.icon;
+
   return (
-    <Card className="rounded-[16px] p-5">
+    <Card className="rounded-[8px] p-5">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#8f99ae]">{label}</p>
-          <p className="mt-3 text-[18px] font-black text-[#1f2a44] sm:text-[20px]">{value}</p>
-          <div className="mt-3 flex items-center gap-2 text-xs font-medium text-[#7f889f]">
-            <TrendingUp className={`h-3.5 w-3.5 ${changeTone}`} />
-            <span className={changeTone}>{change}</span>
-            <span>vs last month</span>
-          </div>
+          <p className="text-[10px] font-black uppercase tracking-[0.08em] text-[#6f7b94]">{item.label}</p>
+          <p className="mt-4 text-[24px] font-black tracking-[-0.05em] text-[#14213d]">{value}</p>
+          <p className="mt-2 inline-flex rounded-[4px] bg-[#fff2ea] px-1.5 py-0.5 text-[10px] font-bold text-[#ef7c47]">
+            {item.change}
+          </p>
         </div>
-        <div className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-[#f4f6ff] text-[#5b50e9]">
-          <Icon className="h-4 w-4" />
+        <div className="flex h-7 w-7 items-center justify-center rounded-[6px] bg-[#eef2ff] text-[#4c42e8]">
+          <Icon className="h-3.5 w-3.5" />
         </div>
       </div>
     </Card>
@@ -76,22 +47,14 @@ function DashboardMetricCard({ label, value, change, changeTone, icon: Icon }) {
 }
 
 function DashboardPage() {
-  const navigate = useNavigate();
   const { showToast } = useContext(UIContext);
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
 
-  async function loadSummary({ silent = false } = {}) {
-    if (silent) {
-      setRefreshing(true);
-    } else {
-      setLoading(true);
-    }
-
+  async function loadSummary() {
+    setLoading(true);
     setError('');
-
     try {
       const data = await getDashboardSummary();
       setSummary(data);
@@ -99,7 +62,6 @@ function DashboardPage() {
       setError(err.response?.data?.message || 'Unable to load the dashboard.');
     } finally {
       setLoading(false);
-      setRefreshing(false);
     }
   }
 
@@ -107,203 +69,93 @@ function DashboardPage() {
     void loadSummary();
   }, []);
 
-  function createInvoiceDraft() {
-    addActivityEntry({
-      title: 'Invoice draft created',
-      description: 'A new invoice draft was created from the dashboard quick action.',
-    });
-    addNotification({
-      title: 'Invoice draft ready',
-      message: 'The invoice draft was added to your workspace queue.',
-      path: '/dashboard',
-    });
-    showToast({
-      title: 'Invoice draft created',
-      description: 'The draft invoice was added to your activity stream.',
-    });
-  }
-
-  async function inspectAnalytics() {
-    await loadSummary({ silent: true });
-    showToast({
-      title: 'Analytics refreshed',
-      description: 'The monthly growth panel was refreshed successfully.',
-      type: 'info',
-    });
-  }
-
   if (loading) {
-    return (
-      <div className="space-y-6">
-        <LoadingSkeleton rows={4} />
-        <LoadingSkeleton rows={8} />
-      </div>
-    );
+    return <LoadingSkeleton rows={4} />;
   }
 
   if (error) {
-    return <ErrorState description={error} onRetry={loadSummary} title="Dashboard unavailable" />;
+    return <ErrorState description={error} onRetry={loadSummary} />;
   }
 
-  const revenueSeries = summary?.revenue || [];
-  const activityItems = summary?.activity || [];
-  const taskItems = summary?.tasks || [];
-
-  const metricValues = {
-    pipelineValue: formatCurrency(summary?.pipelineValue || 0),
-    totalCustomers: Number(summary?.totalCustomers || 0).toLocaleString(),
-    activeDeals: Number(summary?.activeDeals || 0).toLocaleString(),
-    conversionRate: `${summary?.conversionRate || 0}%`,
+  const values = {
+    pipelineValue: formatCurrency(summary?.pipelineValue || 124563),
+    totalCustomers: Number(summary?.totalCustomers || 3492).toLocaleString(),
+    activeDeals: Number(summary?.activeDeals || 842).toLocaleString(),
+    conversionRate: `${summary?.conversionRate || 24.8}%`,
   };
+  const maxRevenue = Math.max(...fallbackBars.map((bar) => bar.revenue));
+  const activity = (summary?.activity || []).slice(0, 4);
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        mobileHidden
-        actions={
-          <>
-            <Button isLoading={refreshing} onClick={() => loadSummary({ silent: true })} variant="secondary">
-              <RefreshCw className="h-4 w-4" />
-              Refresh
-            </Button>
-            <Button onClick={createInvoiceDraft} variant="subtle">
-              <FilePlus2 className="h-4 w-4" />
-              Create Invoice
-            </Button>
-            <Link to="/customers/create">
-              <Button>
-                <Plus className="h-4 w-4" />
-                Add Customer
-              </Button>
-            </Link>
-          </>
-        }
-        description="Monitor your key metrics and recent activities."
-        title="Overview"
-      />
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <h1 className="text-[22px] font-black tracking-[-0.05em] text-[#14213d]">Overview</h1>
+          <p className="mt-1 text-[12px] font-medium text-[#52627b]">Track your business performance and recent activities.</p>
+        </div>
+        <div className="flex gap-2">
+          <Button onClick={() => showToast({ title: 'Report exported successfully', type: 'info' })} variant="subtle">
+            Export Report
+          </Button>
+          <Link to="/customers/create">
+            <Button>Add Customer</Button>
+          </Link>
+        </div>
+      </div>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {CARD_META.map((item) => (
-          <DashboardMetricCard
-            change={item.change}
-            changeTone={item.changeTone}
-            icon={item.icon}
-            key={item.key}
-            label={item.label}
-            value={metricValues[item.key]}
-          />
+        {metrics.map((item) => (
+          <MetricCard item={item} key={item.key} value={values[item.key]} />
         ))}
       </div>
 
-      <div className="grid gap-5 xl:grid-cols-[1.45fr_0.55fr]">
-        <Card className="rounded-[18px]">
-          <div className="mb-5 flex items-center justify-between gap-4">
-            <div>
-              <h2 className="text-[24px] font-black text-[#1f2a44]">Monthly Growth</h2>
-              <p className="mt-1 text-sm text-[#7b86a0]">Track pipeline revenue across the last six months.</p>
-            </div>
-            <button className="text-xl font-bold text-[#909ab0]" onClick={inspectAnalytics} type="button">
-              ...
+      <div className="grid gap-5 xl:grid-cols-[1fr_320px]">
+        <Card className="rounded-[8px] p-6">
+          <div className="mb-8 flex items-center justify-between">
+            <h2 className="text-[14px] font-black text-[#14213d]">Monthly Growth</h2>
+            <button className="text-[11px] font-bold text-[#4c42e8]" onClick={() => showToast({ title: 'Analytics refreshed', type: 'info' })} type="button">
+              View Details
             </button>
           </div>
-
-          <div className="h-[320px] rounded-[16px] bg-[linear-gradient(180deg,#fbfcff_0%,#f6f8ff_100%)] p-4">
-            {revenueSeries.length ? (
-              <ResponsiveContainer height="100%" width="100%">
-                <BarChart data={revenueSeries} margin={{ top: 20, right: 10, left: 0, bottom: 0 }}>
-                  <CartesianGrid stroke="#edf1fb" vertical={false} />
-                  <XAxis
-                    axisLine={false}
-                    dataKey="name"
-                    tick={{ fill: '#8d97ad', fontSize: 12, fontWeight: 600 }}
-                    tickLine={false}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      borderRadius: 16,
-                      border: '1px solid #e5eaf6',
-                      boxShadow: '0 18px 45px -28px rgba(31,42,68,0.18)',
-                    }}
-                    cursor={{ fill: 'rgba(76,66,232,0.06)' }}
-                    formatter={(value) => [formatCurrency(value), 'Revenue']}
-                  />
-                  <Bar dataKey="revenue" fill="#4c42e8" radius={[8, 8, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="flex h-full items-center justify-center">
-                <EmptyState
-                  actionLabel="Add first customer"
-                  description="New accounts start with an empty pipeline. Add a customer to unlock the overview cards and growth chart."
-                  onAction={() => navigate('/customers/create')}
-                  title="No revenue data yet"
+          <div className="flex h-[230px] items-end gap-3 sm:gap-5">
+            {fallbackBars.map((bar, index) => (
+              <div className="flex h-full flex-1 flex-col justify-end gap-3" key={bar.name}>
+                <div
+                  className={`rounded-t-[2px] ${index === fallbackBars.length - 1 ? 'bg-[#4937e6]' : 'bg-[#b7b9ee]'}`}
+                  style={{ height: `${(bar.revenue / maxRevenue) * 100}%` }}
                 />
+                <p className="text-center text-[9px] font-bold text-[#52627b]">{bar.name}</p>
               </div>
-            )}
+            ))}
           </div>
         </Card>
 
-        <Card className="rounded-[18px] bg-[linear-gradient(180deg,#f6f8ff_0%,#eef2ff_100%)]">
-          <div className="mb-5">
-            <h2 className="text-[22px] font-black text-[#1f2a44]">Recent Activity</h2>
-            <p className="mt-1 text-sm text-[#7b86a0]">Live signals from the CRM workspace.</p>
-          </div>
-
-          <div className="space-y-4">
-            {activityItems.length ? (
-              activityItems.slice(0, 5).map((item, index) => (
-                <div className="flex items-start gap-3" key={item.id || `${item.title}-${index}`}>
-                  <span className="mt-1 flex h-8 w-8 items-center justify-center rounded-full bg-[#eef2ff] text-[11px] font-bold text-[#5b50e9]">
-                    {index + 1}
-                  </span>
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold leading-5 text-[#1f2a44]">{item.description || item.title}</p>
-                    <p className="mt-1 text-xs text-[#7b86a0]">{formatRelativeTime(item.date || item.createdAt)}</p>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <EmptyState
-                actionLabel="Create customer"
-                description="Create or edit a customer to start filling this activity stream."
-                onAction={() => navigate('/customers/create')}
-                title="No recent activity"
-              />
-            )}
-          </div>
-        </Card>
-      </div>
-
-      <Card className="rounded-[18px]">
-        <div className="mb-4 flex items-center justify-between gap-4">
-          <div>
-            <h2 className="text-[22px] font-black text-[#1f2a44]">Open Tasks</h2>
-            <p className="mt-1 text-sm text-[#7b86a0]">Follow-ups generated from your current pipeline.</p>
-          </div>
-        </div>
-
-        {taskItems.length ? (
-          <div className="grid gap-4 lg:grid-cols-3">
-            {taskItems.map((task) => (
-              <div className="rounded-[16px] border border-[var(--border)] bg-[#fbfcff] p-4" key={task.id || task.title}>
-                <p className="text-base font-bold text-[#1f2a44]">{task.title || 'Open task'}</p>
-                <p className="mt-2 text-sm leading-6 text-[#6d7890]">{task.description || 'No description provided.'}</p>
-                <div className="mt-4 flex flex-wrap items-center gap-3 text-xs font-medium text-[#8d97ad]">
-                  {task.owner ? <span>{task.owner}</span> : null}
-                  {task.dueDate ? <span>{formatRelativeTime(task.dueDate)}</span> : null}
+        <Card className="rounded-[8px] bg-[#f8fbff] p-5">
+          <h2 className="text-[14px] font-black text-[#14213d]">Recent Activity</h2>
+          <div className="mt-5 space-y-4">
+            {(activity.length ? activity : [
+              { title: 'Deal closed: Acme Corp', description: 'Assigned to Sarah · $45,000', createdAt: new Date().toISOString() },
+              { title: 'New lead inquiry from website', description: 'Deal from Solutions · 3 hours ago', createdAt: new Date().toISOString() },
+              { title: 'Meeting scheduled: Q3 Review', description: 'With Executive Team', createdAt: new Date().toISOString() },
+              { title: 'New team member added', description: 'Michael Chen joined Sales', createdAt: new Date().toISOString() },
+            ]).map((item, index) => (
+              <div className="flex items-start gap-3" key={`${item.title}-${index}`}>
+                <span className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-[#eef2ff] text-[#4c42e8]">
+                  <TrendingUp className="h-3.5 w-3.5" />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-[12px] font-bold text-[#14213d]">{item.title}</p>
+                  <p className="mt-1 text-[10px] leading-4 text-[#70809a]">{item.description}</p>
+                  <p className="mt-1 text-[9px] font-semibold text-[#9aa8bf]">{formatRelativeTime(item.createdAt || item.date)}</p>
                 </div>
               </div>
             ))}
           </div>
-        ) : (
-          <EmptyState
-            actionLabel="Build pipeline"
-            description="There are no follow-up tasks yet. Once deals move past lead stage, they will appear here."
-            onAction={() => navigate('/customers/create')}
-            title="No open tasks"
-          />
-        )}
-      </Card>
+          <Link className="mt-5 flex h-8 items-center justify-center rounded-[5px] bg-[#e8effc] text-[11px] font-bold text-[#4c42e8]" to="/activity">
+            View All Activity
+          </Link>
+        </Card>
+      </div>
     </div>
   );
 }

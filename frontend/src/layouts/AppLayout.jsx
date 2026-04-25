@@ -9,8 +9,8 @@ function AppLayout() {
       <Sidebar />
       <div className="min-h-screen lg:pl-[176px]">
         <Topbar />
-        <main className="min-h-screen px-4 pb-[96px] pt-[74px] sm:px-6 lg:px-7 lg:pb-10 lg:pt-[96px]">
-          <div className="mx-auto w-full max-w-[1320px]">
+        <main className="min-h-screen px-4 pb-[96px] pt-[72px] sm:px-6 lg:px-7 lg:pb-12 lg:pt-[74px]">
+          <div className="mx-auto w-full max-w-[1480px]">
             <Outlet />
           </div>
         </main>

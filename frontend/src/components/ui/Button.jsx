@@ -2,18 +2,18 @@ import { cx } from '../../utils/formatters';
 
 const variants = {
   primary:
-    'border border-[#4c42e8] bg-[linear-gradient(135deg,#4c42e8_0%,#5a49f4_100%)] text-white shadow-[0_12px_24px_-14px_rgba(76,66,232,0.85)] hover:translate-y-[-1px] hover:shadow-[0_18px_30px_-16px_rgba(76,66,232,0.95)]',
+    'border border-[#4c42e8] bg-[#4c42e8] text-white shadow-[0_12px_24px_-16px_rgba(76,66,232,0.9)] hover:bg-[#4339d6]',
   secondary:
     'border border-[#dfe6ff] bg-[#eef2ff] text-[#4c42e8] hover:border-[#d3dcff] hover:bg-[#e6ecff]',
   ghost: 'border border-transparent bg-transparent text-[#51607a] hover:bg-[#f3f6ff] hover:text-[#1f2a44]',
-  danger: 'border border-[#ffd7d1] bg-[#fff4f1] text-[#f3704b] hover:border-[#ffc8be] hover:bg-[#ffede8]',
+  danger: 'border border-[#c81e1e] bg-[#c81e1e] text-white hover:bg-[#b91c1c]',
   subtle: 'border border-[#edf1ff] bg-white text-[#1f2a44] hover:bg-[#f8f9ff]',
 };
 
 const sizes = {
-  sm: 'min-h-[36px] px-3.5 py-2 text-sm',
-  md: 'min-h-[40px] px-4 py-2.5 text-sm',
-  lg: 'min-h-[46px] px-5 py-3 text-base',
+  sm: 'min-h-[32px] px-3 py-1.5 text-xs',
+  md: 'min-h-[36px] px-4 py-2 text-xs',
+  lg: 'min-h-[44px] px-5 py-3 text-sm',
 };
 
 function Button({
@@ -29,7 +29,7 @@ function Button({
   return (
     <button
       className={cx(
-        'inline-flex items-center justify-center gap-2 rounded-[12px] font-semibold transition duration-200',
+        'inline-flex items-center justify-center gap-2 rounded-[8px] font-bold transition duration-200',
         'focus:ring-4 focus:ring-brand-100 disabled:cursor-not-allowed disabled:opacity-60',
         sizes[size],
         variants[variant],

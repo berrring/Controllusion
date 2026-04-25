@@ -1,11 +1,12 @@
 import { useContext, useState } from 'react';
-import { ArrowRight, Eye, EyeOff, Grid2x2, LockKeyhole, Mail } from 'lucide-react';
+import { Eye, EyeOff, Link2 } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import * as authService from '../../services/authService';
 import { addActivityEntry, addNotification } from '../../services/storage';
 import { validateLogin } from '../../utils/validation';
 import { UIContext } from '../../context/UIContext';
+import { APP_BRAND } from '../../utils/constants';
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -27,23 +28,6 @@ function LoginPage() {
     setErrors((current) => ({ ...current, [name]: '' }));
   }
 
-  function completeLogin(currentUser) {
-    addActivityEntry({
-      title: 'Signed in',
-      description: `${currentUser.fullName} signed in to Controllusion.`,
-    });
-    addNotification({
-      title: 'Welcome back',
-      message: `Signed in as ${currentUser.fullName}.`,
-      path: '/dashboard',
-    });
-    showToast({
-      title: 'Welcome back',
-      description: 'Your CRM workspace is ready.',
-    });
-    navigate(redirectTo, { replace: true, state: { rememberMe } });
-  }
-
   async function handleSubmit(event) {
     event.preventDefault();
     const validationErrors = validateLogin(values);
@@ -58,7 +42,20 @@ function LoginPage() {
 
     try {
       const currentUser = await loginUser(values);
-      completeLogin(currentUser);
+      addActivityEntry({
+        title: 'Signed in',
+        description: `${currentUser.fullName} signed in to Controllusion.`,
+      });
+      addNotification({
+        title: 'Welcome back',
+        message: `Signed in as ${currentUser.fullName}.`,
+        path: '/dashboard',
+      });
+      showToast({
+        title: 'Welcome back',
+        description: 'Your CRM workspace is ready.',
+      });
+      navigate(redirectTo, { replace: true, state: { rememberMe } });
     } catch (error) {
       setSubmitError(error.response?.data?.message || 'Unable to sign in right now.');
     } finally {
@@ -87,134 +84,82 @@ function LoginPage() {
     }
   }
 
-  async function handleProviderLogin(provider) {
-    const credentials =
-      provider === 'google'
-        ? { email: 'sara@controllusion.com', password: 'User@1234' }
-        : { email: 'admin@controllusion.com', password: 'Admin@123' };
-
-    setSubmitting(true);
-    setSubmitError('');
-
-    try {
-      const currentUser = await loginUser(credentials);
-      showToast({
-        title: provider === 'google' ? 'Signed in with Google' : 'Signed in with Apple',
-        description: `Demo provider login opened ${currentUser.fullName}.`,
-      });
-      completeLogin(currentUser);
-    } catch (error) {
-      setSubmitError(error.response?.data?.message || 'Unable to use this provider.');
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#f6f8ff] px-4 py-10">
-      <div className="pointer-events-none absolute left-[-10%] top-[6%] h-64 w-64 rounded-full bg-[radial-gradient(circle,rgba(76,66,232,0.16)_0%,rgba(76,66,232,0)_72%)]" />
-      <div className="pointer-events-none absolute bottom-[-10%] right-[-8%] h-72 w-72 rounded-full bg-[radial-gradient(circle,rgba(111,179,255,0.18)_0%,rgba(111,179,255,0)_72%)]" />
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#f7f9ff] px-4 py-10 font-ui">
+      <div className="pointer-events-none absolute left-[-6%] top-0 h-[380px] w-[420px] rounded-full bg-[radial-gradient(circle,rgba(222,233,255,0.92)_0%,rgba(247,249,255,0)_67%)]" />
+      <div className="pointer-events-none absolute bottom-[-8%] right-[-5%] h-[360px] w-[430px] rounded-full bg-[radial-gradient(circle,rgba(217,231,255,0.95)_0%,rgba(247,249,255,0)_68%)]" />
 
-      <div className="relative w-full max-w-[420px] rounded-[24px] border border-[#edf0fb] bg-white px-7 py-8 shadow-[0_30px_70px_-42px_rgba(17,24,39,0.24)] sm:px-8 sm:py-9">
-        <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-[18px] bg-[linear-gradient(135deg,#4c42e8_0%,#5a49f4_100%)] text-white shadow-[0_14px_28px_-18px_rgba(76,66,232,0.75)] sm:hidden">
-          <Grid2x2 className="h-5 w-5" />
+      <div className="relative w-full max-w-[232px] rounded-[7px] bg-white px-6 py-7 shadow-[0_22px_60px_-42px_rgba(31,42,68,0.35)]">
+        <div className="mx-auto flex h-8 w-8 items-center justify-center rounded-[6px] bg-[#4c42e8] text-white shadow-[0_12px_24px_-16px_rgba(76,66,232,0.8)]">
+          <Link2 className="h-4 w-4" />
         </div>
 
-        <div className="text-center">
-          <h1 className="text-[34px] font-black tracking-[-0.04em] text-[#1f2a44] sm:text-[36px]">Controllusion</h1>
-          <p className="mt-2 text-sm text-[#7b86a0]">Secure Enterprise Hub Access</p>
+        <div className="mt-5 text-center">
+          <h1 className="text-[17px] font-black tracking-[-0.04em] text-[#17223b]">{APP_BRAND.name}</h1>
+          <p className="mt-1 text-[10px] font-semibold text-[#70809a]">Sign in to your workspace</p>
         </div>
 
-        <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
+        <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
           <label className="block">
-            <span className="mb-2 block text-sm font-semibold text-[#4f5d78]">Email address</span>
-            <div className="relative">
-              <Mail className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9aa5bd]" />
-              <input
-                className="h-12 w-full rounded-[12px] border border-[#edf0fb] bg-white pl-11 pr-4 text-sm font-medium text-[#1f2a44] outline-none transition placeholder:text-[#bcc4d5] focus:border-[#cfd7ff] focus:ring-4 focus:ring-[#eef2ff]"
-                name="email"
-                onChange={handleChange}
-                placeholder="name@company.com"
-                type="email"
-                value={values.email}
-              />
-            </div>
-            {errors.email ? <span className="mt-2 block text-sm font-medium text-[#ec6a60]">{errors.email}</span> : null}
+            <span className="mb-1.5 block text-[10px] font-semibold text-[#52627b]">Email Address</span>
+            <input
+              className="h-8 w-full rounded-[5px] border border-transparent bg-[#f6f8ff] px-3 text-[11px] font-medium text-[#17223b] outline-none placeholder:text-[#c4ccdc] focus:border-[#dce5fb]"
+              name="email"
+              onChange={handleChange}
+              placeholder="name@company.com"
+              type="email"
+              value={values.email}
+            />
+            {errors.email ? <span className="mt-1 block text-[10px] font-medium text-[#ec6a60]">{errors.email}</span> : null}
           </label>
 
           <label className="block">
-            <div className="mb-2 flex items-center justify-between gap-3">
-              <span className="text-sm font-semibold text-[#4f5d78]">Password</span>
-              <button className="text-xs font-semibold text-[#4c42e8]" onClick={handleForgotPassword} type="button">
-                Forgot Password?
-              </button>
-            </div>
+            <span className="mb-1.5 block text-[10px] font-semibold text-[#52627b]">Password</span>
             <div className="relative">
-              <LockKeyhole className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9aa5bd]" />
               <input
-                className="h-12 w-full rounded-[12px] border border-[#edf0fb] bg-white pl-11 pr-12 text-sm font-medium text-[#1f2a44] outline-none transition placeholder:text-[#bcc4d5] focus:border-[#cfd7ff] focus:ring-4 focus:ring-[#eef2ff]"
+                className="h-8 w-full rounded-[5px] border border-transparent bg-[#f6f8ff] px-3 pr-8 text-[11px] font-medium text-[#17223b] outline-none placeholder:text-[#c4ccdc] focus:border-[#dce5fb]"
                 name="password"
                 onChange={handleChange}
-                placeholder="Enter password"
+                placeholder="••••••••"
                 type={showPassword ? 'text' : 'password'}
                 value={values.password}
               />
-              <button
-                className="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-[10px] text-[#7f8aa3] transition hover:bg-[#f6f8ff]"
-                onClick={() => setShowPassword((current) => !current)}
-                type="button"
-              >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              <button className="absolute right-1.5 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center text-[#8c99ae]" onClick={() => setShowPassword((current) => !current)} type="button">
+                {showPassword ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
               </button>
             </div>
-            {errors.password ? <span className="mt-2 block text-sm font-medium text-[#ec6a60]">{errors.password}</span> : null}
+            {errors.password ? <span className="mt-1 block text-[10px] font-medium text-[#ec6a60]">{errors.password}</span> : null}
           </label>
 
-          <label className="flex items-center gap-2 text-sm text-[#6d7890]">
-            <input
-              checked={rememberMe}
-              className="h-4 w-4 rounded border-[var(--border)] accent-[#4c42e8]"
-              onChange={() => setRememberMe((current) => !current)}
-              type="checkbox"
-            />
-            <span>Remember Me</span>
-          </label>
+          <div className="flex items-center justify-between gap-2 text-[9px]">
+            <label className="flex items-center gap-1.5 font-medium text-[#70809a]">
+              <input
+                checked={rememberMe}
+                className="h-3 w-3 rounded border-[#dfe7f4] accent-[#4c42e8]"
+                onChange={() => setRememberMe((current) => !current)}
+                type="checkbox"
+              />
+              Remember Me
+            </label>
+            <button className="font-bold text-[#4c42e8]" onClick={handleForgotPassword} type="button">
+              Forgot Password?
+            </button>
+          </div>
 
-          {submitError ? <div className="rounded-[14px] bg-[#fff1ee] px-4 py-3 text-sm font-medium text-[#ec6a60]">{submitError}</div> : null}
+          {submitError ? <div className="rounded-[6px] bg-[#fff1ee] px-3 py-2 text-[10px] font-medium text-[#ec6a60]">{submitError}</div> : null}
 
           <button
-            className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-[12px] bg-[linear-gradient(135deg,#4c42e8_0%,#5a49f4_100%)] text-sm font-bold text-white shadow-[0_18px_30px_-20px_rgba(76,66,232,0.85)] transition hover:translate-y-[-1px]"
+            className="h-9 w-full rounded-[6px] bg-[#4c42e8] text-[11px] font-bold text-white shadow-[0_12px_24px_-16px_rgba(76,66,232,0.85)] transition hover:bg-[#4339d6]"
             disabled={submitting}
             type="submit"
           >
             {submitting ? 'Signing In...' : 'Sign In'}
-            {!submitting ? <ArrowRight className="h-4 w-4" /> : null}
           </button>
         </form>
 
-        <div className="mt-7 border-t border-[#edf0fb] pt-6 sm:hidden">
-          <p className="text-center text-[11px] font-bold uppercase tracking-[0.12em] text-[#a0aac0]">Or continue with</p>
-          <div className="mt-4 grid grid-cols-2 gap-3">
-            <button
-              className="h-11 rounded-[12px] border border-[#edf0fb] bg-white text-sm font-semibold text-[#1f2a44]"
-              onClick={() => handleProviderLogin('google')}
-              type="button"
-            >
-              Google
-            </button>
-            <button
-              className="h-11 rounded-[12px] border border-[#edf0fb] bg-white text-sm font-semibold text-[#1f2a44]"
-              onClick={() => handleProviderLogin('apple')}
-              type="button"
-            >
-              Apple
-            </button>
-          </div>
-        </div>
-
-        <p className="mt-7 text-center text-sm text-[#7b86a0]">
+        <p className="mt-7 text-center text-[10px] font-medium text-[#70809a]">
           Don&apos;t have an account?{' '}
-          <Link className="font-semibold text-[#4c42e8]" to="/register">
+          <Link className="font-bold text-[#4c42e8]" to="/register">
             Request Access
           </Link>
         </p>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
+import { Building2, Lightbulb, MapPin, UserRound } from 'lucide-react';
 import { STAGE_OPTIONS, STATUS_OPTIONS } from '../../utils/constants';
 import { validateCustomer } from '../../utils/validation';
-import Badge from '../ui/Badge';
 import Button from '../ui/Button';
 import Card from '../ui/Card';
 import Input from '../ui/Input';
@@ -14,22 +14,32 @@ const defaultValues = {
   phone: '',
   company: '',
   jobTitle: '',
-  status: 'New',
-  stage: 'Lead',
+  status: 'Active',
+  stage: 'Qualified',
   dealValue: '',
   notes: '',
   location: '',
   industry: '',
 };
 
-function CustomerForm({
-  initialValues = defaultValues,
-  onSubmit,
-  onCancel,
-  submitLabel = 'Save customer',
-  title,
-  description,
-}) {
+function Section({ children, icon: Icon, subtitle, title }) {
+  return (
+    <Card className="rounded-[9px] p-6">
+      <div className="mb-5 flex items-center gap-3 border-b border-[#edf2fb] pb-4">
+        <span className="flex h-7 w-7 items-center justify-center rounded-[6px] bg-[#eef2ff] text-[#4c42e8]">
+          <Icon className="h-3.5 w-3.5" />
+        </span>
+        <div>
+          <h3 className="text-[14px] font-black text-[#14213d]">{title}</h3>
+          {subtitle ? <p className="mt-1 text-[11px] font-medium text-[#70809a]">{subtitle}</p> : null}
+        </div>
+      </div>
+      {children}
+    </Card>
+  );
+}
+
+function CustomerForm({ initialValues = defaultValues, onSubmit, onCancel, submitLabel = 'Save Customer' }) {
   const [values, setValues] = useState({ ...defaultValues, ...initialValues });
   const [errors, setErrors] = useState({});
   const [submitError, setSubmitError] = useState('');
@@ -70,141 +80,122 @@ function CustomerForm({
   }
 
   return (
-    <form className="space-y-6" onSubmit={handleSubmit}>
-      <Card className="rounded-[18px]">
-        <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
-          <div>
-            <h2 className="text-[36px] font-black tracking-tight text-[#1f2a44]">{title}</h2>
-            <p className="mt-2 max-w-2xl text-sm leading-7 text-[#6d7890]">{description}</p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Badge variant={values.dealValue > 50000 ? 'warning' : 'default'}>
-              {values.dealValue > 50000 ? 'HIGH VALUE' : 'STANDARD'}
-            </Badge>
-            <Badge variant={values.status === 'Active' || values.status === 'VIP' ? 'brand' : 'default'}>{values.status.toUpperCase()}</Badge>
-          </div>
-        </div>
-      </Card>
-
-      <div className="grid gap-6 xl:grid-cols-[0.62fr_1.38fr]">
-        <div className="space-y-12 px-2 pt-2">
-          <div>
-            <h3 className="text-[28px] font-black text-[#1f2a44]">Basic Information</h3>
-            <p className="mt-2 text-sm leading-7 text-[#6d7890]">
-              Primary contact details for this account. This information is used for billing and critical communications.
-            </p>
-          </div>
-
-          <div>
-            <h3 className="text-[28px] font-black text-[#1f2a44]">Company Details</h3>
-            <p className="mt-2 text-sm leading-7 text-[#6d7890]">
-              Organizational context to help us tailor our services and understand account scale.
-            </p>
-          </div>
-
-          <div>
-            <h3 className="text-[28px] font-black text-[#1f2a44]">Internal Details</h3>
-            <p className="mt-2 text-sm leading-7 text-[#6d7890]">
-              Add pipeline metadata and internal notes so the next teammate has the right context before reaching out.
-            </p>
-          </div>
-        </div>
-
-        <div className="space-y-6">
-          <Card className="rounded-[18px]">
-            <div className="grid gap-5 md:grid-cols-2">
-              <div className="md:col-span-2">
-                <FormField error={errors.fullName} htmlFor="fullName" label="Full Name">
-                  <Input id="fullName" name="fullName" onChange={handleChange} value={values.fullName} />
-                </FormField>
-              </div>
-
-              <FormField error={errors.email} htmlFor="email" label="Email Address">
-                <Input id="email" name="email" onChange={handleChange} type="email" value={values.email} />
-              </FormField>
-
-              <FormField error={errors.phone} htmlFor="phone" label="Phone Number">
-                <Input id="phone" name="phone" onChange={handleChange} value={values.phone} />
+    <form className="grid gap-6 xl:grid-cols-[1fr_260px]" onSubmit={handleSubmit}>
+      <div className="space-y-5">
+        <Section icon={Building2} subtitle="Basic information about the organization." title="Company Profile">
+          <div className="grid gap-5 md:grid-cols-2">
+            <div className="md:col-span-2">
+              <FormField error={errors.company} htmlFor="company" label="Company Name *">
+                <Input id="company" name="company" onChange={handleChange} placeholder="e.g. Acme Corporation" value={values.company} />
               </FormField>
             </div>
-          </Card>
-
-          <Card className="rounded-[18px]">
-            <div className="grid gap-5 md:grid-cols-2">
-              <div className="md:col-span-2">
-                <FormField error={errors.company} htmlFor="company" label="Legal Company Name">
-                  <Input id="company" name="company" onChange={handleChange} value={values.company} />
-                </FormField>
-              </div>
-
-              <FormField htmlFor="industry" label="Industry Sector">
-                <Select id="industry" name="industry" onChange={handleChange} value={values.industry}>
-                  <option value="">Select industry</option>
-                  {['Software', 'Manufacturing', 'Financial Services', 'Healthcare', 'Retail', 'AI', 'SaaS'].map((item) => (
-                    <option key={item} value={item}>
-                      {item}
-                    </option>
-                  ))}
-                </Select>
+            <FormField htmlFor="industry" label="Industry">
+              <Select id="industry" name="industry" onChange={handleChange} value={values.industry}>
+                <option value="">Select industry...</option>
+                {['Technology', 'Software', 'Manufacturing', 'Financial Services', 'Healthcare', 'Retail', 'AI', 'SaaS'].map((item) => (
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
+                ))}
+              </Select>
+            </FormField>
+            <FormField htmlFor="jobTitle" label="Company Size">
+              <Input id="jobTitle" name="jobTitle" onChange={handleChange} placeholder="Select size" value={values.jobTitle} />
+            </FormField>
+            <div className="md:col-span-2">
+              <FormField htmlFor="notes" label="Website">
+                <Input id="notes" name="notes" onChange={handleChange} placeholder="https://www.example.com" value={values.notes} />
               </FormField>
-
-              <FormField htmlFor="jobTitle" label="Company Size / Job Title">
-                <Input id="jobTitle" name="jobTitle" onChange={handleChange} value={values.jobTitle} />
-              </FormField>
-
-              <div className="md:col-span-2">
-                <FormField htmlFor="location" label="Website URL / Location">
-                  <Input id="location" name="location" onChange={handleChange} value={values.location} />
-                </FormField>
-              </div>
             </div>
-          </Card>
+          </div>
+        </Section>
 
-          <Card className="rounded-[18px]">
-            <div className="grid gap-5 md:grid-cols-2">
-              <FormField error={errors.status} htmlFor="status" label="Status">
-                <Select id="status" name="status" onChange={handleChange} value={values.status}>
-                  {STATUS_OPTIONS.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </Select>
+        <Section icon={UserRound} subtitle="Primary point of communication for this account." title="Key Contact">
+          <div className="grid gap-5 md:grid-cols-2">
+            <FormField error={errors.fullName} htmlFor="fullName" label="Full Name *">
+              <Input id="fullName" name="fullName" onChange={handleChange} placeholder="Jane Doe" value={values.fullName} />
+            </FormField>
+            <FormField htmlFor="status" label="Current Stage">
+              <Select id="status" name="status" onChange={handleChange} value={values.status}>
+                {STATUS_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </Select>
+            </FormField>
+            <FormField error={errors.email} htmlFor="email" label="Email Address *">
+              <Input id="email" name="email" onChange={handleChange} placeholder="contact@company.com" type="email" value={values.email} />
+            </FormField>
+            <FormField error={errors.phone} htmlFor="phone" label="Phone Number">
+              <Input id="phone" name="phone" onChange={handleChange} placeholder="+1 (555) 000-0000" value={values.phone} />
+            </FormField>
+          </div>
+        </Section>
+
+        <Section icon={MapPin} subtitle="Primary billing and physical address." title="Headquarters">
+          <div className="grid gap-5 md:grid-cols-4">
+            <div className="md:col-span-4">
+              <FormField htmlFor="location" label="Street Address">
+                <Input id="location" name="location" onChange={handleChange} placeholder="123 Innovation Way, Suite 400" value={values.location} />
               </FormField>
-
-              <FormField error={errors.stage} htmlFor="stage" label="Pipeline Stage">
-                <Select id="stage" name="stage" onChange={handleChange} value={values.stage}>
-                  {STAGE_OPTIONS.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </Select>
-              </FormField>
-
-              <FormField error={errors.dealValue} htmlFor="dealValue" label="Deal Value">
-                <Input id="dealValue" min="0" name="dealValue" onChange={handleChange} type="number" value={values.dealValue} />
-              </FormField>
-
-              <FormField htmlFor="industryReadOnly" label="Industry Label">
-                <Input disabled id="industryReadOnly" value={values.industry || 'Not specified'} />
-              </FormField>
-
-              <div className="md:col-span-2">
-                <FormField error={errors.notes} htmlFor="notes" label="Internal Notes">
-                  <Input as="textarea" id="notes" name="notes" onChange={handleChange} rows={5} value={values.notes} />
-                </FormField>
-              </div>
             </div>
-          </Card>
-        </div>
+            <div className="md:col-span-2">
+              <FormField htmlFor="city" label="City">
+                <Input id="city" name="city" placeholder="San Francisco" />
+              </FormField>
+            </div>
+            <FormField htmlFor="state" label="State / Province">
+              <Input id="state" name="state" placeholder="CA" />
+            </FormField>
+            <FormField htmlFor="zip" label="ZIP / Postal">
+              <Input id="zip" name="zip" placeholder="94105" />
+            </FormField>
+          </div>
+        </Section>
       </div>
 
-      {submitError ? <div className="rounded-[16px] bg-[#fff1ee] px-4 py-3 text-sm text-[#ec6a60]">{submitError}</div> : null}
+      <div className="space-y-5">
+        <Card className="rounded-[9px] bg-[#eef4ff] p-5">
+          <h3 className="text-[12px] font-black uppercase tracking-[0.08em] text-[#52627b]">Account Setup Tips</h3>
+          <div className="mt-4 space-y-4 text-[11px] leading-5 text-[#52627b]">
+            {[
+              'Ensure the company domain matches their primary email addresses for automatic lead association.',
+              'Designating a key contact now helps prioritize communication workflows later.',
+              'You can add secondary addresses and billing details from Account Settings after creation.',
+            ].map((tip) => (
+              <div className="flex gap-2" key={tip}>
+                <Lightbulb className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#4c42e8]" />
+                <p>{tip}</p>
+              </div>
+            ))}
+          </div>
+        </Card>
 
-      <div className="sticky bottom-4 z-10 flex justify-end gap-3 rounded-[18px] border border-[var(--border)] bg-white/92 px-4 py-4 backdrop-blur sm:px-6">
+        <Card className="rounded-[9px] bg-[#eef4ff] p-5">
+          <h3 className="text-[12px] font-black uppercase tracking-[0.08em] text-[#52627b]">Pipeline Details</h3>
+          <div className="mt-4 space-y-4">
+            <FormField error={errors.stage} htmlFor="stage" label="Stage">
+              <Select id="stage" name="stage" onChange={handleChange} value={values.stage}>
+                {STAGE_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </Select>
+            </FormField>
+            <FormField error={errors.dealValue} htmlFor="dealValue" label="Projected Value">
+              <Input id="dealValue" min="0" name="dealValue" onChange={handleChange} placeholder="45000" type="number" value={values.dealValue} />
+            </FormField>
+          </div>
+        </Card>
+      </div>
+
+      {submitError ? <div className="xl:col-span-2 rounded-[8px] bg-[#fff1ee] px-4 py-3 text-sm text-[#ec6a60]">{submitError}</div> : null}
+
+      <div className="xl:col-span-2 flex justify-end gap-3">
         <Button onClick={onCancel} type="button" variant="secondary">
-          Cancel Changes
+          Cancel
         </Button>
         <Button isLoading={submitting} type="submit">
           {submitLabel}

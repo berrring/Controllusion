@@ -8,12 +8,19 @@ const HomePage = lazy(() => import('../pages/Home'));
 const LoginPage = lazy(() => import('../pages/Login'));
 const RegisterPage = lazy(() => import('../pages/Register'));
 const DashboardPage = lazy(() => import('../pages/Dashboard'));
+const LeadsPage = lazy(() => import('../pages/Leads'));
 const CustomersPage = lazy(() => import('../pages/Customers'));
 const CustomerCreatePage = lazy(() => import('../pages/CustomerCreate'));
 const CustomerDetailPage = lazy(() => import('../pages/CustomerDetail'));
 const CustomerEditPage = lazy(() => import('../pages/CustomerEdit'));
+const DealsPage = lazy(() => import('../pages/Deals'));
+const AnalyticsPage = lazy(() => import('../pages/Analytics'));
 const ProfilePage = lazy(() => import('../pages/Profile'));
+const SettingsPage = lazy(() => import('../pages/Settings'));
+const SearchResultsPage = lazy(() => import('../pages/SearchResults'));
+const ActivityPage = lazy(() => import('../pages/Activity'));
 const AdminPage = lazy(() => import('../pages/Admin'));
+const AccessDeniedPage = lazy(() => import('../pages/AccessDenied'));
 const NotFoundPage = lazy(() => import('../pages/NotFound'));
 
 function GuestRoute({ children }) {
@@ -58,12 +65,18 @@ function AppRoutes() {
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
             <Route element={<DashboardPage />} path="/dashboard" />
+            <Route element={<LeadsPage />} path="/leads" />
             <Route element={<CustomersPage />} path="/customers" />
             <Route element={<CustomerCreatePage />} path="/customers/create" />
             <Route element={<CustomerDetailPage />} path="/customers/:id" />
             <Route element={<CustomerEditPage />} path="/customers/:id/edit" />
+            <Route element={<DealsPage />} path="/deals" />
+            <Route element={<AnalyticsPage />} path="/analytics" />
+            <Route element={<ActivityPage />} path="/activity" />
+            <Route element={<SearchResultsPage />} path="/search" />
             <Route element={<ProfilePage />} path="/profile" />
-            <Route element={<ProfilePage />} path="/settings" />
+            <Route element={<SettingsPage />} path="/settings" />
+            <Route element={<AccessDeniedPage />} path="/access-denied" />
             <Route element={<ProtectedRoute allowedRoles={['Admin']} mode="ui" />}>
               <Route element={<AdminPage />} path="/admin" />
             </Route>

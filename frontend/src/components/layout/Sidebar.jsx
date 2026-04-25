@@ -1,28 +1,28 @@
 import { useContext } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { CircleHelp, LogOut, X } from 'lucide-react';
+import { CircleHelp, LogOut, Plus, X } from 'lucide-react';
 import { UIContext } from '../../context/UIContext';
 import { useAuth } from '../../hooks/useAuth';
 import { addActivityEntry } from '../../services/storage';
-import { ADMIN_NAV_ITEM, APP_NAV_ITEMS } from '../../utils/constants';
+import { ADMIN_NAV_ITEM, APP_BRAND, APP_NAV_ITEMS } from '../../utils/constants';
 
 function SidebarNavGroup({ items, onNavigate }) {
   return (
-    <div className="mt-6 space-y-2 px-4">
+    <div className="space-y-1.5 px-4">
       {items.map((item) => (
         <NavLink
           className={({ isActive }) =>
-            `flex items-center gap-3 rounded-[10px] px-3 py-2.5 text-[13px] font-medium transition ${
+            `flex items-center gap-3 rounded-[7px] px-3 py-2 text-[12px] font-semibold transition ${
               isActive
-                ? 'bg-[linear-gradient(135deg,#4c42e8_0%,#5b49f1_100%)] text-white shadow-[0_14px_28px_-18px_rgba(76,66,232,0.9)]'
-                : 'text-[#6e7a92] hover:bg-[#f4f7ff] hover:text-[#1f2a44]'
+                ? 'bg-white text-[#4c42e8] shadow-[0_8px_18px_-16px_rgba(31,42,68,0.35)]'
+                : 'text-[#61708a] hover:bg-white/70 hover:text-[#17223b]'
             }`
           }
           key={item.to}
           onClick={onNavigate}
           to={item.to}
         >
-          <item.icon className="h-[17px] w-[17px]" />
+          <item.icon className="h-3.5 w-3.5" />
           <span>{item.label}</span>
         </NavLink>
       ))}
@@ -34,8 +34,7 @@ function SidebarContent({ onNavigate }) {
   const navigate = useNavigate();
   const { logoutUser, user } = useAuth();
   const { showToast } = useContext(UIContext);
-  const navigationItems =
-    user?.role === 'Admin' ? [APP_NAV_ITEMS[0], APP_NAV_ITEMS[1], ADMIN_NAV_ITEM, ...APP_NAV_ITEMS.slice(2)] : APP_NAV_ITEMS;
+  const navigationItems = user?.role === 'Admin' ? [...APP_NAV_ITEMS, ADMIN_NAV_ITEM] : APP_NAV_ITEMS;
 
   async function handleLogout() {
     addActivityEntry({
@@ -56,48 +55,58 @@ function SidebarContent({ onNavigate }) {
     onNavigate?.();
     showToast({
       title: 'Help Center',
-      description: 'Opening product overview and help resources.',
+      description: 'Guides and product resources are available from the landing page.',
       type: 'info',
     });
     navigate('/');
-    window.setTimeout(() => {
-      document.getElementById('features')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 120);
   }
 
   return (
-    <div className="flex h-full flex-col bg-[linear-gradient(180deg,#f5f7ff_0%,#eef2ff_100%)]">
+    <div className="flex h-full flex-col bg-[#eef4ff]">
       <div className="px-4 pb-5 pt-5">
         <Link className="flex items-center gap-3" onClick={onNavigate} to="/dashboard">
-          <span className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-[linear-gradient(135deg,#4c42e8_0%,#5b49f1_100%)] text-sm font-bold text-white">
+          <span className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-[#4c42e8] text-[13px] font-black text-white shadow-[0_12px_24px_-16px_rgba(76,66,232,0.9)]">
             C
           </span>
-          <span>
-            <span className="block text-[15px] font-bold text-[#1f2a44]">Controllusion</span>
-            <span className="block text-[11px] font-medium text-[#8a95ad]">Enterprise Hub</span>
+          <span className="min-w-0">
+            <span className="block truncate text-[14px] font-black leading-4 tracking-[-0.02em] text-[#14213d]">
+              {APP_BRAND.name}
+            </span>
+            <span className="block text-[10px] font-semibold text-[#70809a]">{APP_BRAND.subtitle}</span>
           </span>
         </Link>
       </div>
 
-      <div className="flex-1 overflow-y-auto border-t border-[rgba(222,229,246,0.9)] py-4">
+      <div className="px-4 pb-5">
+        <Link
+          className="flex h-10 items-center justify-center gap-2 rounded-[8px] bg-[#4c42e8] text-[12px] font-bold text-white shadow-[0_14px_24px_-18px_rgba(76,66,232,0.9)] transition hover:bg-[#4339d6]"
+          onClick={onNavigate}
+          to="/customers/create"
+        >
+          <Plus className="h-3.5 w-3.5" />
+          New Entry
+        </Link>
+      </div>
+
+      <div className="flex-1 overflow-y-auto py-1">
         <SidebarNavGroup items={navigationItems} onNavigate={onNavigate} />
       </div>
 
-      <div className="space-y-1 border-t border-[rgba(222,229,246,0.9)] px-4 py-5">
+      <div className="mx-4 mb-4 border-t border-[#dde7f8] pt-4">
         <button
-          className="flex w-full items-center gap-3 rounded-[10px] px-3 py-2.5 text-left text-[13px] font-medium text-[#8a95ad] transition hover:bg-[#f4f7ff] hover:text-[#1f2a44]"
+          className="flex w-full items-center gap-3 rounded-[7px] px-3 py-2 text-left text-[12px] font-semibold text-[#61708a] transition hover:bg-white/70 hover:text-[#17223b]"
           onClick={openHelpCenter}
           type="button"
         >
-          <CircleHelp className="h-4 w-4" />
-          <span>Help Center</span>
+          <CircleHelp className="h-3.5 w-3.5" />
+          <span>Support</span>
         </button>
         <button
-          className="flex w-full items-center gap-3 rounded-[10px] px-3 py-2.5 text-left text-[13px] font-medium text-[#8a95ad] transition hover:bg-[#f4f7ff] hover:text-[#1f2a44]"
+          className="mt-1 flex w-full items-center gap-3 rounded-[7px] px-3 py-2 text-left text-[12px] font-semibold text-[#61708a] transition hover:bg-white/70 hover:text-[#17223b]"
           onClick={handleLogout}
           type="button"
         >
-          <LogOut className="h-4 w-4" />
+          <LogOut className="h-3.5 w-3.5" />
           <span>Sign Out</span>
         </button>
       </div>
@@ -110,23 +119,31 @@ function Sidebar() {
 
   return (
     <>
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[176px] border-r border-[rgba(222,229,246,0.9)] bg-[#f5f7ff] lg:block">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[176px] border-r border-[#dbe6f7] bg-[#eef4ff] lg:block">
         <SidebarContent />
       </aside>
 
-      {sidebarOpen ? (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <button aria-label="Close navigation" className="absolute inset-0 bg-slate-900/28" onClick={() => setSidebarOpen(false)} type="button" />
-          <aside className="absolute inset-y-0 left-0 w-[17rem] bg-[#f5f7ff] shadow-[0_24px_60px_-30px_rgba(15,23,42,0.3)]">
-            <div className="flex justify-end px-4 pt-4">
-              <button className="rounded-[14px] p-2 text-[#7d88a3] transition hover:bg-slate-100" onClick={() => setSidebarOpen(false)} type="button">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            <SidebarContent onNavigate={() => setSidebarOpen(false)} />
-          </aside>
-        </div>
-      ) : null}
+      <div
+        className={`fixed inset-0 z-40 bg-[rgba(15,23,42,0.32)] backdrop-blur-sm transition lg:hidden ${
+          sidebarOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
+        }`}
+      >
+        <button aria-label="Close sidebar" className="absolute inset-0" onClick={() => setSidebarOpen(false)} type="button" />
+        <aside
+          className={`absolute inset-y-0 left-0 w-[280px] overflow-hidden bg-[#eef4ff] shadow-[0_30px_60px_-30px_rgba(15,23,42,0.45)] transition-transform ${
+            sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
+        >
+          <button
+            className="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-[10px] bg-white text-[#61708a]"
+            onClick={() => setSidebarOpen(false)}
+            type="button"
+          >
+            <X className="h-4 w-4" />
+          </button>
+          <SidebarContent onNavigate={() => setSidebarOpen(false)} />
+        </aside>
+      </div>
     </>
   );
 }

@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useEffect, useState } from 'react';
 import { DEFAULT_NOTIFICATION_TIMEOUT } from '../utils/constants';
 import { getPreferences, savePreferences } from '../services/storage';
 
@@ -21,30 +21,28 @@ export function UIProvider({ children }) {
     document.documentElement.dataset.theme = normalizeTheme(preferences.theme);
   }, [preferences.theme]);
 
-  function updateTheme(theme) {
-    setPreferences((current) => ({
-      ...current,
-      theme: normalizeTheme(theme),
-    }));
-  }
+  const updateTheme = useCallback((theme) => {
+    const nextTheme = normalizeTheme(theme);
+    setPreferences((current) => (current.theme === nextTheme ? current : { ...current, theme: nextTheme }));
+  }, []);
 
-  function showToast({
+  const showToast = useCallback(({
     title,
     description = '',
     type = 'success',
     duration = DEFAULT_NOTIFICATION_TIMEOUT,
-  }) {
+  }) => {
     const id = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     const toast = { id, title, description, type };
     setToasts((current) => [...current, toast]);
     window.setTimeout(() => {
       setToasts((current) => current.filter((item) => item.id !== id));
     }, duration);
-  }
+  }, []);
 
-  function dismissToast(id) {
+  const dismissToast = useCallback((id) => {
     setToasts((current) => current.filter((item) => item.id !== id));
-  }
+  }, []);
 
   return (
     <UIContext.Provider
