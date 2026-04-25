@@ -44,6 +44,7 @@ function MobileTabbar() {
     location.pathname.startsWith('/admin') ||
     location.pathname.startsWith('/settings') ||
     location.pathname.startsWith('/profile') ||
+    location.pathname.startsWith('/support') ||
     location.pathname.startsWith('/search') ||
     location.pathname.startsWith('/activity');
 

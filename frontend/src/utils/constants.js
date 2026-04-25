@@ -115,6 +115,11 @@ export const APP_SEARCH_ITEMS = [
     path: '/settings',
   },
   {
+    key: 'support',
+    label: 'Support',
+    path: '/support',
+  },
+  {
     key: 'admin',
     label: 'Admin',
     path: '/admin',

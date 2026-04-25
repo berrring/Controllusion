@@ -93,6 +93,19 @@ function ProfilePage() {
     }
   }
 
+  function requestDeactivate() {
+    addNotification({
+      title: 'Account deactivation requested',
+      message: 'A workspace owner must approve account deactivation.',
+      path: '/profile',
+    });
+    showToast({
+      title: 'Deactivation request queued',
+      description: 'A workspace owner approval is required before this account changes state.',
+      type: 'info',
+    });
+  }
+
   return (
     <div className="mx-auto max-w-[820px] space-y-6">
       <div>
@@ -203,7 +216,7 @@ function ProfilePage() {
                   <p className="text-[11px] text-[#70809a]">Once you delete your account, there is no going back.</p>
                 </div>
               </div>
-              <Button variant="danger">Deactivate Account</Button>
+              <Button onClick={requestDeactivate} variant="danger">Deactivate Account</Button>
             </div>
           </Card>
         </div>

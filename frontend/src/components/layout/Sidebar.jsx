@@ -53,12 +53,7 @@ function SidebarContent({ onNavigate }) {
 
   function openHelpCenter() {
     onNavigate?.();
-    showToast({
-      title: 'Help Center',
-      description: 'Guides and product resources are available from the landing page.',
-      type: 'info',
-    });
-    navigate('/');
+    navigate('/support');
   }
 
   return (

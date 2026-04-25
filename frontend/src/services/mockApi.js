@@ -81,6 +81,12 @@ const SEED_USERS = [
   },
 ];
 
+const DEMO_LOGIN_ALIASES = {
+  admin: 'admin@controllusion.com',
+  showcase: 'showcase@controllusion.com',
+  demo: 'showcase@controllusion.com',
+};
+
 const SEED_CUSTOMERS = [
   {
     id: '57e1c8d4-52ef-4bf4-bd72-cf1f9d33a001',
@@ -409,15 +415,54 @@ function mergeSeedCollection(items, seedItems) {
   ];
 }
 
+function normalizeStoredEmail(email) {
+  return String(email || '').trim().toLowerCase();
+}
+
+function mergeSeedUsers(items, seedUsers) {
+  const currentUsers = Array.isArray(items) ? items.map((item) => ({ ...item })) : [];
+  const seedEmails = new Set(seedUsers.map((item) => normalizeStoredEmail(item.email)));
+  const usedIndexes = new Set();
+  const mergedSeeds = seedUsers.map((seedUser) => {
+    const seedEmail = normalizeStoredEmail(seedUser.email);
+    const existingIndex = currentUsers.findIndex(
+      (user, index) =>
+        !usedIndexes.has(index) &&
+        (user.id === seedUser.id || normalizeStoredEmail(user.email) === seedEmail),
+    );
+
+    if (existingIndex === -1) {
+      return { ...seedUser };
+    }
+
+    usedIndexes.add(existingIndex);
+    return {
+      ...currentUsers[existingIndex],
+      ...seedUser,
+      password: seedUser.password,
+      email: seedUser.email,
+      role: seedUser.role,
+      isActive: seedUser.isActive,
+    };
+  });
+
+  const customUsers = currentUsers.filter(
+    (user, index) => !usedIndexes.has(index) && !seedEmails.has(normalizeStoredEmail(user.email)),
+  );
+
+  return [...mergedSeeds, ...customUsers];
+}
+
 function upgradeDatabase(database) {
+  const previousUsers = JSON.stringify(Array.isArray(database?.users) ? database.users : []);
+  const previousCustomers = JSON.stringify(Array.isArray(database?.customers) ? database.customers : []);
   const nextDatabase = {
-    users: mergeSeedCollection(database?.users, SEED_USERS),
+    users: mergeSeedUsers(database?.users, SEED_USERS),
     customers: mergeSeedCollection(database?.customers, SEED_CUSTOMERS),
   };
 
-  const usersChanged = nextDatabase.users.length !== (Array.isArray(database?.users) ? database.users.length : 0);
-  const customersChanged =
-    nextDatabase.customers.length !== (Array.isArray(database?.customers) ? database.customers.length : 0);
+  const usersChanged = JSON.stringify(nextDatabase.users) !== previousUsers;
+  const customersChanged = JSON.stringify(nextDatabase.customers) !== previousCustomers;
 
   if (usersChanged || customersChanged) {
     localStorage.setItem(MOCK_DB_KEY, JSON.stringify(nextDatabase));
@@ -457,7 +502,12 @@ function createId() {
 }
 
 function normalizeEmail(email) {
-  return email.trim().toLowerCase();
+  return normalizeStoredEmail(email);
+}
+
+function normalizeLoginIdentifier(identifier) {
+  const normalized = normalizeStoredEmail(identifier);
+  return DEMO_LOGIN_ALIASES[normalized] || normalized;
 }
 
 function sanitizeUser(user) {
@@ -618,9 +668,11 @@ function assertUniqueCustomerEmail(database, email, excludedCustomerId = null) {
 
 async function login(credentials) {
   const database = getDatabase();
-  const user = database.users.find((item) => item.email === normalizeEmail(credentials.email || ''));
+  const email = normalizeLoginIdentifier(credentials.email || '');
+  const password = String(credentials.password || '').trim();
+  const user = database.users.find((item) => normalizeEmail(item.email) === email);
 
-  if (!user || user.password !== credentials.password) {
+  if (!user || user.password !== password) {
     throw createApiError('Invalid email or password.', 401);
   }
 

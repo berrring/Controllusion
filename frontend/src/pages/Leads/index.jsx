@@ -1,4 +1,5 @@
-import { Download, Filter, MoreVertical } from 'lucide-react';
+import { useContext } from 'react';
+import { Download, Eye, Filter } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
@@ -9,8 +10,10 @@ import ErrorState from '../../components/common/ErrorState';
 import LoadingSkeleton from '../../components/common/LoadingSkeleton';
 import { useCustomers } from '../../hooks/useCustomers';
 import { formatCurrency } from '../../utils/formatters';
+import { UIContext } from '../../context/UIContext';
 
 function LeadsPage() {
+  const { showToast } = useContext(UIContext);
   const { customers, loading, error, refetch } = useCustomers();
 
   if (loading) {
@@ -23,6 +26,28 @@ function LeadsPage() {
 
   const leads = customers.filter((customer) => ['Lead', 'Qualified'].includes(customer.stage)).slice(0, 6);
 
+  function exportLeads() {
+    if (!leads.length) {
+      showToast({ title: 'No leads to export', description: 'New leads will appear after you create account records.', type: 'info' });
+      return;
+    }
+
+    const csv = [
+      ['Lead Name', 'Company', 'Stage', 'Value'],
+      ...leads.map((lead) => [lead.fullName, lead.company, lead.stage, lead.dealValue]),
+    ]
+      .map((row) => row.map((cell) => `"${String(cell ?? '').replaceAll('"', '""')}"`).join(','))
+      .join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'controllusion-leads.csv';
+    link.click();
+    URL.revokeObjectURL(url);
+    showToast({ title: 'Leads export downloaded', type: 'info' });
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
@@ -31,11 +56,11 @@ function LeadsPage() {
           <p className="mt-1 text-[12px] font-medium text-[#52627b]">Manage and track your pipeline prospects.</p>
         </div>
         <div className="flex gap-3">
-          <Button variant="subtle">
+          <Button onClick={() => showToast({ title: 'Lead filters active', description: 'Showing lead and qualified stages.', type: 'info' })} variant="subtle">
             <Filter className="h-3.5 w-3.5" />
             Filter
           </Button>
-          <Button variant="subtle">
+          <Button onClick={exportLeads} variant="subtle">
             <Download className="h-3.5 w-3.5" />
             Export
           </Button>
@@ -70,7 +95,9 @@ function LeadsPage() {
                     </td>
                     <td className="px-5 py-4 text-[12px] font-black text-[#14213d]">{formatCurrency(lead.dealValue)}</td>
                     <td className="px-5 py-4">
-                      <MoreVertical className="h-4 w-4 text-[#52627b]" />
+                      <Link className="inline-flex h-8 w-8 items-center justify-center rounded-[6px] text-[#52627b] hover:bg-[#eef2ff]" to={`/customers/${lead.id}`}>
+                        <Eye className="h-4 w-4" />
+                      </Link>
                     </td>
                   </tr>
                 ))}

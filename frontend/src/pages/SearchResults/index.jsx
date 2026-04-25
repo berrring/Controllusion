@@ -12,7 +12,7 @@ import { useCustomers } from '../../hooks/useCustomers';
 
 function SearchResultsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const initialQuery = searchParams.get('q') || 'Acme';
+  const initialQuery = searchParams.get('q') || '';
   const [query, setQuery] = useState(initialQuery);
   const { customers, loading, error, refetch } = useCustomers();
 
@@ -22,10 +22,13 @@ function SearchResultsPage() {
 
   const results = useMemo(() => {
     const needle = initialQuery.trim().toLowerCase();
-    const matches = customers.filter((customer) =>
+    if (!needle) {
+      return customers.slice(0, 4);
+    }
+
+    return customers.filter((customer) =>
       [customer.company, customer.fullName, customer.email, customer.location].join(' ').toLowerCase().includes(needle),
     );
-    return matches.length ? matches : customers.slice(0, 2);
   }, [customers, initialQuery]);
 
   function handleSubmit(event) {
@@ -57,8 +60,12 @@ function SearchResultsPage() {
       <div className="grid gap-7 lg:grid-cols-[1fr_220px]">
         <div>
           <p className="text-[10px] font-bold text-[#52627b]">Search Results for</p>
-          <h1 className="mt-1 text-[24px] font-black tracking-[-0.05em] text-[#14213d]">“{initialQuery || 'Acme'}”</h1>
-          <p className="mt-2 text-[12px] text-[#52627b]">Showing top results across your organization.</p>
+          <h1 className="mt-1 text-[24px] font-black tracking-[-0.05em] text-[#14213d]">
+            {initialQuery ? `“${initialQuery}”` : 'All searchable records'}
+          </h1>
+          <p className="mt-2 text-[12px] text-[#52627b]">
+            {results.length ? `Found ${results.length} match${results.length === 1 ? '' : 'es'} across your organization.` : 'No records exist in this workspace yet.'}
+          </p>
 
           <div className="mt-8 space-y-7">
             <section>

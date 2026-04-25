@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Download, Filter, MoreVertical, Plus, Search } from 'lucide-react';
+import { useContext, useEffect, useMemo, useState } from 'react';
+import { Download, Edit3, Eye, Filter, Plus, Search } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { PAGE_SIZE } from '../../utils/constants';
 import { formatCurrency, formatRelativeTime } from '../../utils/formatters';
@@ -13,6 +13,7 @@ import Badge from '../../components/ui/Badge';
 import LoadingSkeleton from '../../components/common/LoadingSkeleton';
 import ErrorState from '../../components/common/ErrorState';
 import EmptyState from '../../components/common/EmptyState';
+import { UIContext } from '../../context/UIContext';
 
 const tabs = ['All Customers', 'Active', 'At Risk', 'Onboarding'];
 
@@ -31,6 +32,7 @@ function getStatusVariant(status) {
 
 function CustomersPage() {
   const navigate = useNavigate();
+  const { showToast } = useContext(UIContext);
   const { customers, loading, error, refetch } = useCustomers();
   const [query, setQuery] = useState('');
   const [activeTab, setActiveTab] = useState('All Customers');
@@ -69,6 +71,38 @@ function CustomersPage() {
   const pageCount = Math.max(1, Math.ceil(filteredCustomers.length / PAGE_SIZE));
   const safePage = Math.min(currentPage, pageCount);
   const paginatedCustomers = filteredCustomers.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+
+  function exportCustomers() {
+    if (!filteredCustomers.length) {
+      showToast({
+        title: 'No customers to export',
+        description: 'Create or broaden your filters before exporting.',
+        type: 'info',
+      });
+      return;
+    }
+
+    const header = ['Name', 'Company', 'Email', 'Status', 'Stage', 'Deal Value'];
+    const rows = filteredCustomers.map((customer) => [
+      customer.fullName,
+      customer.company,
+      customer.email,
+      customer.status,
+      customer.stage,
+      customer.dealValue,
+    ]);
+    const csv = [header, ...rows]
+      .map((row) => row.map((cell) => `"${String(cell ?? '').replaceAll('"', '""')}"`).join(','))
+      .join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'controllusion-customers.csv';
+    link.click();
+    URL.revokeObjectURL(url);
+    showToast({ title: 'Customer export downloaded', type: 'info' });
+  }
 
   return (
     <div className="space-y-6">
@@ -111,11 +145,15 @@ function CustomersPage() {
                 value={query}
               />
             </div>
-            <button className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#52627b]" type="button">
+            <button
+              className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#52627b]"
+              onClick={() => showToast({ title: 'Filters are active', description: `Showing ${activeTab.toLowerCase()} records.`, type: 'info' })}
+              type="button"
+            >
               <Filter className="h-3.5 w-3.5" />
               Filter
             </button>
-            <button className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#52627b]" type="button">
+            <button className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#52627b]" onClick={exportCustomers} type="button">
               <Download className="h-3.5 w-3.5" />
               Export
             </button>
@@ -156,9 +194,14 @@ function CustomersPage() {
                       </td>
                       <td className="px-5 py-4 text-[12px] font-black text-[#14213d]">{formatCurrency(customer.dealValue)}</td>
                       <td className="px-5 py-4">
-                        <Link className="inline-flex h-8 w-8 items-center justify-center rounded-[6px] text-[#52627b] hover:bg-[#eef2ff]" to={`/customers/${customer.id}`}>
-                          <MoreVertical className="h-4 w-4" />
-                        </Link>
+                        <div className="flex items-center gap-2">
+                          <Link className="inline-flex h-8 w-8 items-center justify-center rounded-[6px] text-[#52627b] hover:bg-[#eef2ff]" to={`/customers/${customer.id}`}>
+                            <Eye className="h-4 w-4" />
+                          </Link>
+                          <Link className="inline-flex h-8 w-8 items-center justify-center rounded-[6px] text-[#52627b] hover:bg-[#eef2ff]" to={`/customers/${customer.id}/edit`}>
+                            <Edit3 className="h-4 w-4" />
+                          </Link>
+                        </div>
                       </td>
                     </tr>
                   ))}

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import { Clock3, Download, Filter, Plus } from 'lucide-react';
 import EmptyState from '../../components/common/EmptyState';
 import ErrorState from '../../components/common/ErrorState';
@@ -7,10 +7,12 @@ import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 import { useCustomers } from '../../hooks/useCustomers';
-import { ACTIVITY_UPDATED_EVENT, addActivityEntry, getActivityLog } from '../../services/storage';
+import { ACTIVITY_UPDATED_EVENT, addActivityEntry, addNotification, getActivityLog } from '../../services/storage';
 import { formatRelativeTime } from '../../utils/formatters';
+import { UIContext } from '../../context/UIContext';
 
 function ActivityPage() {
+  const { showToast } = useContext(UIContext);
   const { customers, loading, error, refetch } = useCustomers();
   const [activityLog, setActivityLog] = useState(() => getActivityLog());
 
@@ -50,7 +52,29 @@ function ActivityPage() {
       title: 'Strategic sync: Globex Account',
       description: 'Initial discovery call completed. Client is evaluating our cloud infrastructure solutions for Q4 implementation.',
     });
+    addNotification({
+      title: 'Activity report created',
+      message: 'A new activity checkpoint was added to your workspace timeline.',
+      path: '/activity',
+    });
     setActivityLog(getActivityLog());
+    showToast({ title: 'Activity report created' });
+  }
+
+  function exportLog() {
+    if (!timeline.length) {
+      showToast({ title: 'No activity to export', description: 'Workspace actions will appear here once you start using the CRM.', type: 'info' });
+      return;
+    }
+
+    const blob = new Blob([JSON.stringify(timeline, null, 2)], { type: 'application/json;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'controllusion-activity-log.json';
+    link.click();
+    URL.revokeObjectURL(url);
+    showToast({ title: 'Activity log exported', type: 'info' });
   }
 
   if (loading) {
@@ -75,7 +99,7 @@ function ActivityPage() {
             All Activities
           </button>
           <div className="flex gap-3">
-            <Button onClick={addReviewCheckpoint} variant="secondary">
+            <Button onClick={exportLog} variant="secondary">
               <Download className="h-3.5 w-3.5" />
               Export Log
             </Button>

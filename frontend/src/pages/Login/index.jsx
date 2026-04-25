@@ -89,21 +89,21 @@ function LoginPage() {
       <div className="pointer-events-none absolute left-[-6%] top-0 h-[380px] w-[420px] rounded-full bg-[radial-gradient(circle,rgba(222,233,255,0.92)_0%,rgba(247,249,255,0)_67%)]" />
       <div className="pointer-events-none absolute bottom-[-8%] right-[-5%] h-[360px] w-[430px] rounded-full bg-[radial-gradient(circle,rgba(217,231,255,0.95)_0%,rgba(247,249,255,0)_68%)]" />
 
-      <div className="relative w-full max-w-[232px] rounded-[7px] bg-white px-6 py-7 shadow-[0_22px_60px_-42px_rgba(31,42,68,0.35)]">
-        <div className="mx-auto flex h-8 w-8 items-center justify-center rounded-[6px] bg-[#4c42e8] text-white shadow-[0_12px_24px_-16px_rgba(76,66,232,0.8)]">
-          <Link2 className="h-4 w-4" />
+      <div className="relative w-full max-w-[340px] rounded-[10px] bg-white px-8 py-9 shadow-[0_22px_60px_-42px_rgba(31,42,68,0.35)]">
+        <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-[8px] bg-[#4c42e8] text-white shadow-[0_12px_24px_-16px_rgba(76,66,232,0.8)]">
+          <Link2 className="h-5 w-5" />
         </div>
 
         <div className="mt-5 text-center">
-          <h1 className="text-[17px] font-black tracking-[-0.04em] text-[#17223b]">{APP_BRAND.name}</h1>
-          <p className="mt-1 text-[10px] font-semibold text-[#70809a]">Sign in to your workspace</p>
+          <h1 className="text-[24px] font-black tracking-[-0.04em] text-[#17223b]">{APP_BRAND.name}</h1>
+          <p className="mt-1.5 text-[12px] font-semibold text-[#70809a]">Sign in to your workspace</p>
         </div>
 
-        <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
+        <form className="mt-7 space-y-5" onSubmit={handleSubmit}>
           <label className="block">
-            <span className="mb-1.5 block text-[10px] font-semibold text-[#52627b]">Email Address</span>
+            <span className="mb-2 block text-[12px] font-semibold text-[#52627b]">Email Address</span>
             <input
-              className="h-8 w-full rounded-[5px] border border-transparent bg-[#f6f8ff] px-3 text-[11px] font-medium text-[#17223b] outline-none placeholder:text-[#c4ccdc] focus:border-[#dce5fb]"
+              className="h-10 w-full rounded-[7px] border border-transparent bg-[#f6f8ff] px-3.5 text-[13px] font-medium text-[#17223b] outline-none placeholder:text-[#c4ccdc] focus:border-[#dce5fb]"
               name="email"
               onChange={handleChange}
               placeholder="name@company.com"
@@ -114,10 +114,10 @@ function LoginPage() {
           </label>
 
           <label className="block">
-            <span className="mb-1.5 block text-[10px] font-semibold text-[#52627b]">Password</span>
+            <span className="mb-2 block text-[12px] font-semibold text-[#52627b]">Password</span>
             <div className="relative">
               <input
-                className="h-8 w-full rounded-[5px] border border-transparent bg-[#f6f8ff] px-3 pr-8 text-[11px] font-medium text-[#17223b] outline-none placeholder:text-[#c4ccdc] focus:border-[#dce5fb]"
+                className="h-10 w-full rounded-[7px] border border-transparent bg-[#f6f8ff] px-3.5 pr-9 text-[13px] font-medium text-[#17223b] outline-none placeholder:text-[#c4ccdc] focus:border-[#dce5fb]"
                 name="password"
                 onChange={handleChange}
                 placeholder="••••••••"
@@ -131,7 +131,7 @@ function LoginPage() {
             {errors.password ? <span className="mt-1 block text-[10px] font-medium text-[#ec6a60]">{errors.password}</span> : null}
           </label>
 
-          <div className="flex items-center justify-between gap-2 text-[9px]">
+          <div className="flex items-center justify-between gap-2 text-[11px]">
             <label className="flex items-center gap-1.5 font-medium text-[#70809a]">
               <input
                 checked={rememberMe}
@@ -149,7 +149,7 @@ function LoginPage() {
           {submitError ? <div className="rounded-[6px] bg-[#fff1ee] px-3 py-2 text-[10px] font-medium text-[#ec6a60]">{submitError}</div> : null}
 
           <button
-            className="h-9 w-full rounded-[6px] bg-[#4c42e8] text-[11px] font-bold text-white shadow-[0_12px_24px_-16px_rgba(76,66,232,0.85)] transition hover:bg-[#4339d6]"
+            className="h-10 w-full rounded-[7px] bg-[#4c42e8] text-[13px] font-bold text-white shadow-[0_12px_24px_-16px_rgba(76,66,232,0.85)] transition hover:bg-[#4339d6]"
             disabled={submitting}
             type="submit"
           >
@@ -157,7 +157,7 @@ function LoginPage() {
           </button>
         </form>
 
-        <p className="mt-7 text-center text-[10px] font-medium text-[#70809a]">
+        <p className="mt-7 text-center text-[12px] font-medium text-[#70809a]">
           Don&apos;t have an account?{' '}
           <Link className="font-bold text-[#4c42e8]" to="/register">
             Request Access

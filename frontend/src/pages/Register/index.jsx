@@ -76,35 +76,35 @@ function RegisterPage() {
       <div className="pointer-events-none absolute left-[-6%] top-0 h-[380px] w-[420px] rounded-full bg-[radial-gradient(circle,rgba(222,233,255,0.92)_0%,rgba(247,249,255,0)_67%)]" />
       <div className="pointer-events-none absolute bottom-[-8%] right-[-5%] h-[360px] w-[430px] rounded-full bg-[radial-gradient(circle,rgba(217,231,255,0.95)_0%,rgba(247,249,255,0)_68%)]" />
 
-      <div className="relative w-full max-w-[260px] rounded-[7px] bg-white px-6 py-7 shadow-[0_22px_60px_-42px_rgba(31,42,68,0.35)]">
+      <div className="relative w-full max-w-[370px] rounded-[10px] bg-white px-8 py-9 shadow-[0_22px_60px_-42px_rgba(31,42,68,0.35)]">
         <div className="text-center">
-          <h1 className="text-[17px] font-black tracking-[-0.04em] text-[#17223b]">{APP_BRAND.name}</h1>
-          <p className="mt-1 text-[10px] font-semibold text-[#70809a]">Set up your CRM workspace</p>
+          <h1 className="text-[24px] font-black tracking-[-0.04em] text-[#17223b]">{APP_BRAND.name}</h1>
+          <p className="mt-1.5 text-[12px] font-semibold text-[#70809a]">Set up your CRM workspace</p>
         </div>
 
-        <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
+        <form className="mt-7 space-y-5" onSubmit={handleSubmit}>
           <label className="block">
-            <span className="mb-1.5 block text-[10px] font-semibold text-[#52627b]">Full Name</span>
-            <input className="h-8 w-full rounded-[5px] border border-[#edf2fb] bg-white px-3 text-[11px] outline-none focus:border-[#dce5fb]" name="fullName" onChange={handleChange} value={values.fullName} />
+            <span className="mb-2 block text-[12px] font-semibold text-[#52627b]">Full Name</span>
+            <input className="h-10 w-full rounded-[7px] border border-[#edf2fb] bg-white px-3.5 text-[13px] outline-none focus:border-[#dce5fb]" name="fullName" onChange={handleChange} value={values.fullName} />
             {errors.fullName ? <span className="mt-1 block text-[10px] text-[#ec6a60]">{errors.fullName}</span> : null}
           </label>
 
           <label className="block">
-            <span className="mb-1.5 block text-[10px] font-semibold text-[#52627b]">Workspace Name</span>
-            <input className="h-8 w-full rounded-[5px] border border-[#edf2fb] bg-white px-3 text-[11px] outline-none focus:border-[#dce5fb]" name="workspaceName" onChange={handleChange} value={values.workspaceName} />
+            <span className="mb-2 block text-[12px] font-semibold text-[#52627b]">Workspace Name</span>
+            <input className="h-10 w-full rounded-[7px] border border-[#edf2fb] bg-white px-3.5 text-[13px] outline-none focus:border-[#dce5fb]" name="workspaceName" onChange={handleChange} value={values.workspaceName} />
           </label>
 
           <label className="block">
-            <span className="mb-1.5 block text-[10px] font-semibold text-[#52627b]">Email Address</span>
-            <input className="h-8 w-full rounded-[5px] border border-[#edf2fb] bg-white px-3 text-[11px] outline-none focus:border-[#dce5fb]" name="email" onChange={handleChange} type="email" value={values.email} />
+            <span className="mb-2 block text-[12px] font-semibold text-[#52627b]">Email Address</span>
+            <input className="h-10 w-full rounded-[7px] border border-[#edf2fb] bg-white px-3.5 text-[13px] outline-none focus:border-[#dce5fb]" name="email" onChange={handleChange} type="email" value={values.email} />
             {errors.email ? <span className="mt-1 block text-[10px] text-[#ec6a60]">{errors.email}</span> : null}
           </label>
 
           <label className="block">
-            <span className="mb-1.5 block text-[10px] font-semibold text-[#52627b]">Password</span>
+            <span className="mb-2 block text-[12px] font-semibold text-[#52627b]">Password</span>
             <div className="relative">
               <input
-                className="h-8 w-full rounded-[5px] border border-[#edf2fb] bg-white px-3 pr-8 text-[11px] outline-none focus:border-[#dce5fb]"
+                className="h-10 w-full rounded-[7px] border border-[#edf2fb] bg-white px-3.5 pr-9 text-[13px] outline-none focus:border-[#dce5fb]"
                 name="password"
                 onChange={handleChange}
                 type={showPassword ? 'text' : 'password'}
@@ -124,19 +124,19 @@ function RegisterPage() {
           </label>
 
           <label className="block">
-            <span className="mb-1.5 block text-[10px] font-semibold text-[#52627b]">Confirm Password</span>
-            <input className="h-8 w-full rounded-[5px] border border-[#edf2fb] bg-white px-3 text-[11px] outline-none focus:border-[#dce5fb]" name="confirmPassword" onChange={handleChange} type="password" value={values.confirmPassword} />
+            <span className="mb-2 block text-[12px] font-semibold text-[#52627b]">Confirm Password</span>
+            <input className="h-10 w-full rounded-[7px] border border-[#edf2fb] bg-white px-3.5 text-[13px] outline-none focus:border-[#dce5fb]" name="confirmPassword" onChange={handleChange} type="password" value={values.confirmPassword} />
             {errors.confirmPassword ? <span className="mt-1 block text-[10px] text-[#ec6a60]">{errors.confirmPassword}</span> : null}
           </label>
 
           {submitError ? <div className="rounded-[6px] bg-[#fff1ee] px-3 py-2 text-[10px] text-[#ec6a60]">{submitError}</div> : null}
 
-          <button className="h-9 w-full rounded-[6px] bg-[#4c42e8] text-[11px] font-bold text-white shadow-[0_12px_24px_-16px_rgba(76,66,232,0.85)]" disabled={submitting} type="submit">
+          <button className="h-10 w-full rounded-[7px] bg-[#4c42e8] text-[13px] font-bold text-white shadow-[0_12px_24px_-16px_rgba(76,66,232,0.85)]" disabled={submitting} type="submit">
             {submitting ? 'Creating Workspace...' : 'Create Workspace +'}
           </button>
         </form>
 
-        <p className="mt-6 text-center text-[10px] font-medium text-[#70809a]">
+        <p className="mt-7 text-center text-[12px] font-medium text-[#70809a]">
           Already have an account?{' '}
           <Link className="font-bold text-[#4c42e8]" to="/login">
             Log in

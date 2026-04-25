@@ -17,6 +17,7 @@ const DealsPage = lazy(() => import('../pages/Deals'));
 const AnalyticsPage = lazy(() => import('../pages/Analytics'));
 const ProfilePage = lazy(() => import('../pages/Profile'));
 const SettingsPage = lazy(() => import('../pages/Settings'));
+const SupportPage = lazy(() => import('../pages/Support'));
 const SearchResultsPage = lazy(() => import('../pages/SearchResults'));
 const ActivityPage = lazy(() => import('../pages/Activity'));
 const AdminPage = lazy(() => import('../pages/Admin'));
@@ -76,6 +77,7 @@ function AppRoutes() {
             <Route element={<SearchResultsPage />} path="/search" />
             <Route element={<ProfilePage />} path="/profile" />
             <Route element={<SettingsPage />} path="/settings" />
+            <Route element={<SupportPage />} path="/support" />
             <Route element={<AccessDeniedPage />} path="/access-denied" />
             <Route element={<ProtectedRoute allowedRoles={['Admin']} mode="ui" />}>
               <Route element={<AdminPage />} path="/admin" />
