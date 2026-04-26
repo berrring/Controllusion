@@ -31,12 +31,6 @@ const featureCards = [
   },
 ];
 
-const footerGroups = [
-  ['PRODUCT', 'Features', 'Pricing', 'Integrations', 'Changelog'],
-  ['RESOURCES', 'Blog', 'Help Center', 'Community', 'API Docs'],
-  ['COMPANY', 'About Us', 'Careers', 'Contact', 'Partners'],
-];
-
 function DashboardPreview() {
   return (
     <div className="relative h-[360px] w-[470px] overflow-hidden rounded-[14px] border-[8px] border-white bg-[#071018] shadow-[0_26px_60px_-32px_rgba(15,23,42,0.75)]">
@@ -109,8 +103,6 @@ function HomePage() {
           </Link>
           <nav className="hidden items-center gap-8 text-[13px] font-semibold text-[#39465f] md:flex">
             <a href="#features">Features</a>
-            <a href="#pricing">Pricing</a>
-            <a href="#resources">Resources</a>
           </nav>
           <div className="flex items-center gap-4">
             <Link className="text-[13px] font-semibold text-[#3b2fd3]" to={secondaryPath}>
@@ -160,7 +152,7 @@ function HomePage() {
         <section className="bg-[#eaf1fb] px-6 py-16" id="features">
           <div className="mx-auto max-w-[1060px]">
             <div className="text-center">
-              <h2 className="text-[34px] font-black tracking-[-0.05em]">Everything you need to scale</h2>
+              <h2 className="text-[34px] font-black tracking-[-0.05em]">Features</h2>
               <p className="mt-4 text-[16px] text-[#56637c]">Powerful tools built into a seamless, high-performance workspace.</p>
             </div>
 
@@ -179,44 +171,17 @@ function HomePage() {
           </div>
         </section>
 
-        <section className="px-6 py-20 text-center" id="pricing">
-          <h2 className="text-[42px] font-black tracking-[-0.06em]">Ready to take control?</h2>
-          <p className="mx-auto mt-5 max-w-[660px] text-[17px] leading-8 text-[#56637c]">
-            Join thousands of high-performing teams who rely on Controllusion to manage their sales pipeline.
-          </p>
-          <Link className="mt-10 inline-flex rounded-[10px] bg-[#4c42e8] px-9 py-4 text-[16px] font-bold text-white shadow-[0_18px_35px_-18px_rgba(76,66,232,0.9)]" to={primaryPath}>
-            Start Your Free Trial
-          </Link>
-        </section>
       </main>
 
-      <footer className="bg-[#dfe9f9] px-6 py-14" id="resources">
+      <footer className="bg-[#dfe9f9] px-6 py-10">
         <div className="mx-auto max-w-[980px]">
-          <div className="grid gap-10 md:grid-cols-4">
+          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div>
               <p className="text-[18px] font-black tracking-[-0.04em]">{APP_BRAND.name}</p>
-              <p className="mt-6 text-[14px] leading-6 text-[#56637c]">The editorial, high-end CRM experience for B2B teams.</p>
-            </div>
-            {footerGroups.map(([title, ...links]) => (
-              <div key={title}>
-                <p className="text-[13px] font-black tracking-[0.06em]">{title}</p>
-                <div className="mt-5 space-y-3">
-                  {links.map((link) => (
-                    <a className="block text-[14px] font-medium text-[#56637c]" href="#features" key={link}>
-                      {link}
-                    </a>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="mt-14 flex flex-col gap-4 border-t border-[#cfdaee] pt-7 text-[12px] text-[#56637c] md:flex-row md:items-center md:justify-between">
-            <p>© 2024 Controllusion Inc. All rights reserved.</p>
-            <div className="flex gap-8">
-              <a href="#resources">Privacy Policy</a>
-              <a href="#resources">Terms of Service</a>
+              <p className="mt-3 text-[14px] leading-6 text-[#56637c]">The editorial, high-end CRM experience for B2B teams.</p>
             </div>
           </div>
+          <p className="mt-6 text-[12px] text-[#56637c]">&copy; 2024 Controllusion Inc. All rights reserved.</p>
         </div>
       </footer>
     </div>
